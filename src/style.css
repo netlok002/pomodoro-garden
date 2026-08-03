@@ -1,0 +1,84 @@
+@font-face {
+  font-family: 'VT323';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/vt323.woff2') format('woff2');
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'VT323', ui-monospace, 'Courier New', monospace;
+  font-size: 1.25rem;
+  background: #000;
+  color: #33ff33;
+  position: relative;
+  overflow: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0px,
+    rgba(0, 0, 0, 0.15) 1px,
+    rgba(0, 0, 0, 0.15) 2px
+  );
+  pointer-events: none;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 0.7) 100%);
+  pointer-events: none;
+}
+
+main {
+  text-align: center;
+  position: relative;
+}
+
+#creature {
+  text-shadow: 0 0 6px currentColor, 0 0 12px currentColor;
+}
+
+#timer-display {
+  font-size: 2rem;
+  margin: 1rem 0;
+}
+
+#creature pre {
+  font-size: 3rem;
+  margin: 0;
+}
+
+#controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 1.1rem;
+}
+
+.select-option {
+  padding: 0.15rem 0.75rem;
+  cursor: pointer;
+}
+
+.select-option.selected {
+  background: #33ff33;
+  color: #000;
+}
+
+.select-option.disabled {
+  cursor: default;
+  opacity: 0.6;
+}
