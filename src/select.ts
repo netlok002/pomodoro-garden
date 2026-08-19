@@ -7,8 +7,9 @@ export function renderSelectableList(
   container: HTMLElement,
   options: SelectOption[],
   onConfirm: (value: string) => void,
+  initialIndex = 0,
 ): () => void {
-  let selectedIndex = 0
+  let selectedIndex = initialIndex
 
   const render = () => {
     container.innerHTML = options

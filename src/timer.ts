@@ -1,13 +1,13 @@
-const DURATION_SECONDS = 5 // TODO: back to 25 * 60 (or user-configurable) once basic loop is tested
+export const DEFAULT_DURATION_SECONDS = 25 * 60
 
-function formatTime(totalSeconds: number): string {
+export function formatTime(totalSeconds: number): string {
   const minutes = Math.floor(totalSeconds / 60)
   const seconds = totalSeconds % 60
   return `${minutes}:${seconds.toString().padStart(2, '0')}`
 }
 
-export function startTimer(display: HTMLElement, onDone: () => void) {
-  let remainingSeconds = DURATION_SECONDS
+export function startTimer(display: HTMLElement, durationSeconds: number, onDone: () => void): () => void {
+  let remainingSeconds = durationSeconds
   let intervalId: number | undefined
 
   const render = () => {
@@ -25,4 +25,6 @@ export function startTimer(display: HTMLElement, onDone: () => void) {
 
   render()
   intervalId = setInterval(tick, 1000)
+
+  return () => clearInterval(intervalId)
 }

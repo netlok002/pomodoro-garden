@@ -28,6 +28,6 @@ export function renderCreature(container: HTMLElement, state: CreatureState) {
   const { mood, art } = getMoodTier(state.xp)
   container.innerHTML = `
     <pre>${art}</pre>
-    <p>${mood} — XP: ${state.xp}</p>
+    <p>${mood}</p>
   `
 }

@@ -55,6 +55,11 @@ main {
   margin: 1rem 0;
 }
 
+.timer-value {
+  cursor: pointer;
+  border-bottom: 1px dashed currentColor;
+}
+
 #creature pre {
   font-size: 3rem;
   margin: 0;
@@ -81,4 +86,74 @@ main {
 .select-option.disabled {
   cursor: default;
   opacity: 0.6;
+}
+
+.xp-bar {
+  position: fixed;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 1;
+}
+
+.xp-bar-level {
+  font-size: 1rem;
+}
+
+.xp-bar-track {
+  width: 12px;
+  height: 40vh;
+  border: 1px solid #33ff33;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 2px;
+}
+
+.xp-bar-fill {
+  width: 100%;
+  background: #33ff33;
+  box-shadow: 0 0 6px currentColor, 0 0 12px currentColor;
+  transition: height 0.3s ease;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.modal-panel {
+  position: relative;
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid #33ff33;
+  box-shadow: 0 0 8px rgba(51, 255, 51, 0.6);
+  padding: 1.75rem 1.5rem 1rem;
+}
+
+.modal-close {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  font: inherit;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: inherit;
+  cursor: pointer;
+  padding: 0.25rem;
+}
+
+.modal-close:hover {
+  text-shadow: 0 0 6px currentColor, 0 0 12px currentColor;
 }
