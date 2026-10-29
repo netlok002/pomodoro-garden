@@ -55,7 +55,7 @@ export function initSession(elements: SessionElements) {
 
   const renderWeather = () => {
     const overriddenToday = weatherOverride?.date === todayKey()
-    renderForecast(elements.forecast, forecast(new Date(), weatherOverride), overriddenToday, () => {
+    renderForecast(elements.forecast, forecast(new Date(), weatherOverride), () => {
       openWeatherPicker(overriddenToday ? weatherOverride!.weather : null, (choice) => {
         weatherOverride = choice ? { date: todayKey(), weather: choice } : null
         save()

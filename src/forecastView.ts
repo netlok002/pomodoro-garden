@@ -6,10 +6,11 @@ const WIDTH = 320
 const HEIGHT = 128
 const ARC = { cx: 160, cy: 118, r: 104 }
 
-const DAYS: { key: keyof Forecast; label: string; angle: number }[] = [
-  { key: 'yesterday', label: 'yesterday', angle: 160 },
-  { key: 'today', label: 'today', angle: 90 },
-  { key: 'tomorrow', label: 'tomorrow', angle: 20 },
+// Yesterday on the lower left, today at the top, tomorrow on the lower right.
+const DAYS: { key: keyof Forecast; angle: number }[] = [
+  { key: 'yesterday', angle: 160 },
+  { key: 'today', angle: 90 },
+  { key: 'tomorrow', angle: 20 },
 ]
 
 function arcPoint(angleDeg: number) {
@@ -20,18 +21,18 @@ function arcPoint(angleDeg: number) {
   }
 }
 
-function dayHtml(key: keyof Forecast, label: string, angle: number, weather: Weather, note: string): string {
+function dayHtml(key: keyof Forecast, angle: number, weather: Weather): string {
   const { left, top } = arcPoint(angle)
   const tag = key === 'today' ? 'button' : 'div'
   return `
-    <${tag} class="forecast-day forecast-${key}" style="left: ${left}%; top: ${top}%" title="${WEATHER_LABELS[weather]}">
+    <${tag} class="forecast-day forecast-${key}" style="left: ${left}%; top: ${top}%">
       <span class="forecast-art">${weatherArt(weather)}</span>
-      <span class="forecast-label">${label} · ${WEATHER_LABELS[weather]}${note}</span>
+      <span class="forecast-label">${WEATHER_LABELS[weather]}</span>
     </${tag}>
   `
 }
 
-export function renderForecast(container: HTMLElement, forecast: Forecast, overridden: boolean, onTodayClick: () => void) {
+export function renderForecast(container: HTMLElement, forecast: Forecast, onTodayClick: () => void) {
   const arcStart = `${ARC.cx - ARC.r} ${ARC.cy}`
   const arcEnd = `${ARC.cx + ARC.r} ${ARC.cy}`
 
@@ -39,9 +40,7 @@ export function renderForecast(container: HTMLElement, forecast: Forecast, overr
     <svg class="forecast-arc" viewBox="0 0 ${WIDTH} ${HEIGHT}" aria-hidden="true">
       <path d="M${arcStart} A${ARC.r} ${ARC.r} 0 0 1 ${arcEnd}" />
     </svg>
-    ${DAYS.map(({ key, label, angle }) =>
-      dayHtml(key, label, angle, forecast[key], key === 'today' && overridden ? ' (by hand)' : ''),
-    ).join('')}
+    ${DAYS.map(({ key, angle }) => dayHtml(key, angle, forecast[key])).join('')}
   `
 
   container.querySelector<HTMLButtonElement>('.forecast-today')!.addEventListener('click', onTodayClick)
