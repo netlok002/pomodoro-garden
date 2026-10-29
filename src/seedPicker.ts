@@ -1,27 +1,12 @@
 import { openModal } from './modal.ts'
 import { SPECIES } from './species.ts'
 import { speciesArt } from './art.ts'
+import { pointOnCircle, wedgePath } from './wheel.ts'
 
-const CENTER = 100
-const RADIUS = 90
 const ART_RADIUS = 52
 const ART_SIZE = 30
 const MINUTES_RADIUS = 78
 const WEDGE_DEGREES = 360 / SPECIES.length
-
-function pointOnCircle(angleDeg: number, radius: number) {
-  const angleRad = (Math.PI / 180) * angleDeg
-  return {
-    x: CENTER + radius * Math.sin(angleRad),
-    y: CENTER - radius * Math.cos(angleRad),
-  }
-}
-
-function wedgePath(startAngle: number, endAngle: number): string {
-  const start = pointOnCircle(startAngle, RADIUS)
-  const end = pointOnCircle(endAngle, RADIUS)
-  return `M ${CENTER},${CENTER} L ${start.x},${start.y} A ${RADIUS},${RADIUS} 0 0,1 ${end.x},${end.y} Z`
-}
 
 export function openSeedPicker(currentSpeciesId: string, onSelect: (speciesId: string) => void) {
   openModal((body, close) => {

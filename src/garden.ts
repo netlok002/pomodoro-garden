@@ -1,14 +1,18 @@
+import type { WeatherTally } from './weather.ts'
+
 export const GARDEN_CAPACITY = 10
 
 export interface Flower {
   kind: 'flower'
   speciesId: string
+  perfect: boolean
 }
 
 export interface Sprout {
   kind: 'sprout'
   speciesId: string
   elapsedSeconds: number
+  weatherSeconds: WeatherTally
 }
 
 export type Plant = Flower | Sprout

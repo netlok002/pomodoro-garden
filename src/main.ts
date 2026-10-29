@@ -8,6 +8,7 @@ initDevSpeed()
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   ${SKETCH_FILTERS}
   <main>
+    <div id="forecast" class="forecast"></div>
     <div id="plant"></div>
     <div id="timer-display"></div>
     <div id="controls"></div>
@@ -16,10 +17,13 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   </main>
 `
 
-initSession(
-  document.querySelector<HTMLDivElement>('#timer-display')!,
-  document.querySelector<HTMLDivElement>('#controls')!,
-  document.querySelector<HTMLDivElement>('#plant')!,
-  document.querySelector<HTMLDivElement>('#garden')!,
-  document.querySelector<HTMLParagraphElement>('#note')!,
-)
+const element = (id: string) => document.querySelector<HTMLElement>(`#${id}`)!
+
+initSession({
+  forecast: element('forecast'),
+  plant: element('plant'),
+  display: element('timer-display'),
+  controls: element('controls'),
+  garden: element('garden'),
+  note: element('note'),
+})

@@ -19,7 +19,8 @@ export function renderGarden(container: HTMLElement, garden: Garden, handlers?: 
     const species = getSpecies(plant.speciesId)
     if (plant.kind === 'flower') {
       const title = handlers ? `Pick ${species.name}` : species.name
-      return `<div class="garden-slot flower${clickable}" data-slot="${index}" title="${title}">${speciesArt(species.id)}</div>`
+      const perfect = plant.perfect ? ' perfect' : ''
+      return `<div class="garden-slot flower${perfect}${clickable}" data-slot="${index}" title="${title}">${speciesArt(species.id)}</div>`
     }
 
     const minutesLeft = Math.ceil((species.durationMinutes * 60 - plant.elapsedSeconds) / 60)

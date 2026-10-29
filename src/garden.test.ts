@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { GARDEN_CAPACITY, isFull, placePlant, removePlant, type Garden, type Plant } from './garden.ts'
 
-const flower: Plant = { kind: 'flower', speciesId: 'glowcap' }
-const sprout: Plant = { kind: 'sprout', speciesId: 'veilvine', elapsedSeconds: 600 }
+const flower: Plant = { kind: 'flower', speciesId: 'glowcap', perfect: false }
+const sprout: Plant = { kind: 'sprout', speciesId: 'veilvine', elapsedSeconds: 600, weatherSeconds: {} }
 
 const gardenOf = (count: number): Garden => Array.from({ length: count }, () => flower)
 
@@ -23,7 +23,7 @@ describe('placePlant', () => {
   })
 
   it('replaces the plant in a given slot, keeping the others in place', () => {
-    const grown: Plant = { kind: 'flower', speciesId: 'veilvine' }
+    const grown: Plant = { kind: 'flower', speciesId: 'veilvine', perfect: false }
     expect(placePlant([flower, sprout, flower], grown, 1)).toEqual([flower, grown, flower])
   })
 
@@ -39,14 +39,14 @@ describe('placePlant', () => {
 
   it('still lets a sprout in a full garden finish growing in its slot', () => {
     const fullWithSprout = [...gardenOf(9), sprout]
-    const grown: Plant = { kind: 'flower', speciesId: 'veilvine' }
+    const grown: Plant = { kind: 'flower', speciesId: 'veilvine', perfect: false }
     expect(placePlant(fullWithSprout, grown, 9)[9]).toEqual(grown)
   })
 })
 
 describe('removePlant', () => {
   it('takes the plant out of its slot, shifting later plants down', () => {
-    const other: Plant = { kind: 'flower', speciesId: 'murkmoss' }
+    const other: Plant = { kind: 'flower', speciesId: 'murkmoss', perfect: false }
     expect(removePlant([flower, sprout, other], 1)).toEqual([flower, other])
   })
 
