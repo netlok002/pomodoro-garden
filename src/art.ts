@@ -112,3 +112,8 @@ const WEATHER_ART: Record<Weather, string> = {
 export function weatherArt(weather: Weather): string {
   return sketch(WEATHER_ART[weather])
 }
+
+// A four-pointed twinkle for the celebration screen.
+export function sparkleArt(): string {
+  return sketch('M24 8 C25 20 28 23 40 24 C28 25 25 28 24 40 C23 28 20 25 8 24 C20 23 23 20 24 8 Z')
+}

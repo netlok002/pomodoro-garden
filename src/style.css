@@ -410,3 +410,48 @@ main {
 .book-link:hover {
   color: var(--rose);
 }
+
+/* Celebration: the bloom sways in the wind while ink sparkles twinkle around it. */
+.celebration {
+  position: relative;
+  width: 11rem;
+  height: 10rem;
+  margin: 0 auto;
+}
+
+.celebration-art {
+  width: 9rem;
+  height: 9rem;
+  transform-origin: 50% 92%;
+  animation: sway 3.2s ease-in-out infinite;
+}
+
+.sparkle {
+  position: absolute;
+  width: 1.1rem;
+  height: 1.1rem;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  animation: twinkle 2.8s ease-in-out infinite;
+}
+
+@keyframes sway {
+  0%, 100% { transform: rotate(-2.5deg); }
+  50% { transform: rotate(2.5deg); }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+  50% { opacity: 0.85; transform: translate(-50%, -50%) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .celebration-art,
+  .sparkle {
+    animation: none;
+  }
+
+  .sparkle {
+    opacity: 0.6;
+  }
+}

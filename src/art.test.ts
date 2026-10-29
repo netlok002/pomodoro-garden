@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { speciesArt, stageArt, weatherArt } from './art.ts'
+import { sparkleArt, speciesArt, stageArt, weatherArt } from './art.ts'
 import { WEATHERS } from './weather.ts'
 import { SPECIES } from './species.ts'
 
@@ -24,5 +24,11 @@ describe('weatherArt', () => {
     for (const weather of WEATHERS) {
       expect(weatherArt(weather)).toContain('<svg')
     }
+  })
+})
+
+describe('sparkleArt', () => {
+  it('is a drawing', () => {
+    expect(sparkleArt()).toContain('<svg')
   })
 })

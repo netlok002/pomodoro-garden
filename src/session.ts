@@ -18,7 +18,7 @@ import { openWeatherPicker } from './weatherPicker.ts'
 import { openBook } from './bookView.ts'
 import { renderGarden } from './gardenView.ts'
 import { renderForecast } from './forecastView.ts'
-import { renderGrowingPlant, renderSeedChoice } from './plantView.ts'
+import { renderCelebration, renderGrowingPlant, renderSeedChoice } from './plantView.ts'
 
 // What is growing right now. slotIndex is set when resuming a sprout already in the garden.
 interface Planting {
@@ -144,8 +144,9 @@ export function initSession(elements: SessionElements) {
     const onDone = () => {
       playDoneSound()
       const perfect = isPerfect(weatherSeconds, species.perfectWeather)
+      // Saved straight away, so closing the tab mid-celebration never loses the flower.
       updateGarden(placePlant(garden, { kind: 'flower', speciesId: species.id, perfect }, planting.slotIndex))
-      goIdle(perfect ? `A perfect ${species.name} bloomed!` : `A ${species.name} bloomed.`)
+      goCelebrating(species.id, perfect, planting.slotIndex ?? garden.length - 1)
     }
 
     const cancelTimer = startTimer(elements.display, remainingSeconds, onDone, onTick)
@@ -158,6 +159,25 @@ export function initSession(elements: SessionElements) {
         updateGarden(placePlant(garden, sprout, planting.slotIndex))
       }
       goIdle()
+    })
+  }
+
+  // The bloom is already in its garden slot; the player keeps it there or picks it.
+  const goCelebrating = (speciesId: string, perfect: boolean, slotIndex: number) => {
+    const species = getSpecies(speciesId)
+    renderCelebration(elements.plant, species, perfect)
+    renderGarden(elements.garden, garden)
+    elements.display.innerHTML = ''
+    elements.note.textContent = ''
+    elements.controls.innerHTML = `
+      <div id="keep-button" class="select-option selected">❯ Plant in garden</div>
+      <div id="pick-button" class="select-option">❯ Pick into book</div>
+    `
+    elements.controls.querySelector<HTMLDivElement>('#keep-button')!.addEventListener('click', () => {
+      goIdle(`Planted a ${perfect ? 'perfect ' : ''}${species.name} in your garden.`)
+    })
+    elements.controls.querySelector<HTMLDivElement>('#pick-button')!.addEventListener('click', () => {
+      pickFlower(slotIndex)
     })
   }
 
