@@ -1,4 +1,4 @@
-export type Speed = 1 | 4 | 15
+export type Speed = 1 | 4 | 20
 
 let currentSpeed: Speed = 1
 
@@ -22,6 +22,6 @@ export function initDevSpeed() {
     if (!event.ctrlKey || !event.shiftKey) return
     if (event.code === 'Digit1') setSpeed(1)
     else if (event.code === 'Digit2') setSpeed(4)
-    else if (event.code === 'Digit3') setSpeed(15)
+    else if (event.code === 'Digit3') setSpeed(20)
   })
 }
