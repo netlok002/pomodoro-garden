@@ -1,0 +1,28 @@
+export const GARDEN_CAPACITY = 10
+
+export interface Flower {
+  kind: 'flower'
+  speciesId: string
+}
+
+export interface Sprout {
+  kind: 'sprout'
+  speciesId: string
+  elapsedSeconds: number
+}
+
+export type Plant = Flower | Sprout
+
+export type Garden = Plant[]
+
+export function isFull(garden: Garden): boolean {
+  return garden.length >= GARDEN_CAPACITY
+}
+
+export function placePlant(garden: Garden, plant: Plant, slotIndex?: number): Garden {
+  if (slotIndex !== undefined) {
+    return garden.map((existing, index) => (index === slotIndex ? plant : existing))
+  }
+  if (isFull(garden)) throw new Error('Garden is full')
+  return [...garden, plant]
+}

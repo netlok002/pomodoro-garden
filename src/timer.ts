@@ -1,4 +1,6 @@
-export const DEFAULT_DURATION_SECONDS = 25 * 60
+import { getSpeed } from './devSpeed.ts'
+
+const TICK_MS = 100
 
 export function formatTime(totalSeconds: number): string {
   const minutes = Math.floor(totalSeconds / 60)
@@ -6,17 +8,26 @@ export function formatTime(totalSeconds: number): string {
   return `${minutes}:${seconds.toString().padStart(2, '0')}`
 }
 
-export function startTimer(display: HTMLElement, durationSeconds: number, onDone: () => void): () => void {
+// Returns a cancel function that stops the timer and reports how many seconds ran.
+export function startTimer(
+  display: HTMLElement,
+  durationSeconds: number,
+  onDone: () => void,
+  onTick: (elapsedSeconds: number) => void = () => {},
+): () => number {
   let remainingSeconds = durationSeconds
   let intervalId: number | undefined
 
+  const elapsedSeconds = () => Math.floor(durationSeconds - Math.max(0, remainingSeconds))
+
   const render = () => {
-    display.textContent = formatTime(remainingSeconds)
+    display.textContent = formatTime(Math.max(0, Math.round(remainingSeconds)))
   }
 
   const tick = () => {
-    remainingSeconds -= 1
+    remainingSeconds -= (TICK_MS / 1000) * getSpeed()
     render()
+    onTick(elapsedSeconds())
     if (remainingSeconds <= 0) {
       clearInterval(intervalId)
       onDone()
@@ -24,7 +35,10 @@ export function startTimer(display: HTMLElement, durationSeconds: number, onDone
   }
 
   render()
-  intervalId = setInterval(tick, 1000)
+  intervalId = setInterval(tick, TICK_MS)
 
-  return () => clearInterval(intervalId)
+  return () => {
+    clearInterval(intervalId)
+    return elapsedSeconds()
+  }
 }

@@ -5,7 +5,6 @@ export function openModal(render: (body: HTMLElement, close: () => void) => (() 
   overlay.className = 'modal-overlay'
   overlay.innerHTML = `
     <div class="modal-panel">
-      <button class="modal-close" aria-label="Close">&times;</button>
       <div class="modal-body"></div>
     </div>
   `
@@ -24,7 +23,6 @@ export function openModal(render: (body: HTMLElement, close: () => void) => (() 
   overlay.addEventListener('click', (event) => {
     if (event.target === overlay) close()
   })
-  overlay.querySelector<HTMLButtonElement>('.modal-close')!.addEventListener('click', close)
   document.addEventListener('keydown', onKeydown)
 
   const body = overlay.querySelector<HTMLElement>('.modal-body')!

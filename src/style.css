@@ -46,7 +46,7 @@ main {
   position: relative;
 }
 
-#creature {
+#plant {
   text-shadow: 0 0 6px currentColor, 0 0 12px currentColor;
 }
 
@@ -60,9 +60,13 @@ main {
   border-bottom: 1px dashed currentColor;
 }
 
-#creature pre {
+.plant-glyph {
   font-size: 3rem;
-  margin: 0;
+  line-height: 1.2;
+}
+
+#plant p {
+  margin: 0.25rem 0 0;
 }
 
 #controls {
@@ -88,40 +92,6 @@ main {
   opacity: 0.6;
 }
 
-.xp-bar {
-  position: fixed;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  z-index: 1;
-}
-
-.xp-bar-level {
-  font-size: 1rem;
-}
-
-.xp-bar-track {
-  width: 12px;
-  height: 40vh;
-  border: 1px solid #33ff33;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: 2px;
-}
-
-.xp-bar-fill {
-  width: 100%;
-  background: #33ff33;
-  box-shadow: 0 0 6px currentColor, 0 0 12px currentColor;
-  transition: height 0.3s ease;
-}
-
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -134,26 +104,107 @@ main {
 
 .modal-panel {
   position: relative;
+  width: min(90vw, 480px);
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  clip-path: circle(50%);
   background: rgba(0, 0, 0, 0.9);
   border: 1px solid #33ff33;
   box-shadow: 0 0 8px rgba(51, 255, 51, 0.6);
-  padding: 1.75rem 1.5rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.modal-close {
-  position: absolute;
-  top: 0.25rem;
-  right: 0.5rem;
-  background: none;
-  border: none;
-  font: inherit;
-  font-size: 1.25rem;
-  line-height: 1;
-  color: inherit;
+.modal-body {
+  width: 100%;
+  height: 100%;
+}
+
+.seed-picker {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.seed-wedge {
+  fill: transparent;
+  stroke: #33ff33;
+  stroke-width: 1;
   cursor: pointer;
-  padding: 0.25rem;
+  transition: fill 0.15s ease;
 }
 
-.modal-close:hover {
-  text-shadow: 0 0 6px currentColor, 0 0 12px currentColor;
+.seed-wedge:hover {
+  fill: rgba(51, 255, 51, 0.25);
+}
+
+.seed-wedge.selected {
+  fill: rgba(51, 255, 51, 0.4);
+}
+
+.dev-speed-badge {
+  position: fixed;
+  top: 0.75rem;
+  right: 0.75rem;
+  font-size: 0.9rem;
+  color: #33ff33;
+  text-shadow: 0 0 6px currentColor;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.seed-wedge-minutes {
+  fill: #33ff33;
+  opacity: 0.55;
+  font-family: inherit;
+  font-size: 12px;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+}
+
+.seed-wedge-glyph {
+  font-size: 22px;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+}
+
+.garden {
+  display: grid;
+  grid-template-columns: repeat(5, 3rem);
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.garden-slot {
+  position: relative;
+  height: 3rem;
+  border: 1px solid rgba(51, 255, 51, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+}
+
+.garden-slot.empty {
+  opacity: 0.4;
+  font-size: 1rem;
+}
+
+.garden-slot.sprout.clickable {
+  cursor: pointer;
+}
+
+.garden-slot.sprout.clickable:hover {
+  background: rgba(51, 255, 51, 0.2);
+}
+
+.garden-slot-minutes {
+  position: absolute;
+  bottom: 0;
+  right: 0.2rem;
+  font-size: 0.75rem;
 }
