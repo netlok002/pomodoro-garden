@@ -16,3 +16,13 @@ export function recordPick(book: Book, speciesId: string, variant: Variant, date
     : { count: 1, firstFound: date }
   return { ...book, [speciesId]: { ...page, [variant]: entry } }
 }
+
+const VARIANTS: Variant[] = ['normal', 'perfect']
+
+export function bookProgress(book: Book, speciesCount: number): { found: number; total: number } {
+  const found = Object.values(book).reduce(
+    (sum, page) => sum + VARIANTS.filter((variant) => page[variant]).length,
+    0,
+  )
+  return { found, total: speciesCount * VARIANTS.length }
+}

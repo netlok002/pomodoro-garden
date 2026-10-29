@@ -15,6 +15,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     <div id="garden" class="garden"></div>
     <p id="note" class="note"></p>
   </main>
+  <button id="book-link" class="book-link">Flower Book</button>
 `
 
 const element = (id: string) => document.querySelector<HTMLElement>(`#${id}`)!
@@ -26,4 +27,5 @@ initSession({
   controls: element('controls'),
   garden: element('garden'),
   note: element('note'),
+  bookLink: element('book-link'),
 })

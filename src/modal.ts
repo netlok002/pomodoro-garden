@@ -1,10 +1,14 @@
-export function openModal(render: (body: HTMLElement, close: () => void) => (() => void) | void) {
+// panelClass picks the panel's shape: round wheels by default, 'modal-page' for a paper page.
+export function openModal(
+  render: (body: HTMLElement, close: () => void) => (() => void) | void,
+  panelClass = '',
+) {
   let cleanupContent: (() => void) | void
 
   const overlay = document.createElement('div')
   overlay.className = 'modal-overlay'
   overlay.innerHTML = `
-    <div class="modal-panel">
+    <div class="modal-panel ${panelClass}">
       <div class="modal-body"></div>
     </div>
   `

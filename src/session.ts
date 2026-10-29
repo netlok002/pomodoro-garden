@@ -15,6 +15,7 @@ import { loadState, saveState } from './storage.ts'
 import { playDoneSound, playStartSound } from './sound.ts'
 import { openSeedPicker } from './seedPicker.ts'
 import { openWeatherPicker } from './weatherPicker.ts'
+import { openBook } from './bookView.ts'
 import { renderGarden } from './gardenView.ts'
 import { renderForecast } from './forecastView.ts'
 import { renderGrowingPlant, renderSeedChoice } from './plantView.ts'
@@ -34,6 +35,7 @@ export interface SessionElements {
   controls: HTMLElement
   garden: HTMLElement
   note: HTMLElement
+  bookLink: HTMLElement
 }
 
 export function initSession(elements: SessionElements) {
@@ -158,6 +160,8 @@ export function initSession(elements: SessionElements) {
       goIdle()
     })
   }
+
+  elements.bookLink.addEventListener('click', () => openBook(book))
 
   goIdle()
 }

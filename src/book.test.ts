@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { recordPick, type Book } from './book.ts'
+import { bookProgress, recordPick, type Book } from './book.ts'
 
 describe('recordPick', () => {
   it('adds a first find with a count of 1 and the date found', () => {
@@ -27,5 +27,19 @@ describe('recordPick', () => {
     const book: Book = {}
     recordPick(book, 'glowcap', 'normal', '2026-10-29')
     expect(book).toEqual({})
+  })
+})
+
+describe('bookProgress', () => {
+  it('counts found entries out of a normal and perfect entry per species', () => {
+    const book: Book = {
+      glowcap: { normal: { count: 4, firstFound: '2026-10-29' }, perfect: { count: 1, firstFound: '2026-10-30' } },
+      murkmoss: { normal: { count: 1, firstFound: '2026-10-29' } },
+    }
+    expect(bookProgress(book, 8)).toEqual({ found: 3, total: 16 })
+  })
+
+  it('starts at zero', () => {
+    expect(bookProgress({}, 8)).toEqual({ found: 0, total: 16 })
   })
 })
