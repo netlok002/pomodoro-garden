@@ -1,3 +1,5 @@
+import type { Weather } from './weather.ts'
+
 // Placeholder line drawings, swapped for hand-drawn art later.
 // Every drawing sits on a 48x48 canvas with the ground line at y = 44.
 
@@ -87,4 +89,26 @@ export function speciesArt(speciesId: string): string {
   const paths = BLOOMS[speciesId]
   if (!paths) throw new Error(`No art for species: ${speciesId}`)
   return sketch(paths)
+}
+
+// A puffy cloud outline whose flat base sits at (x, y), scaled by s.
+const cloud = (x: number, y: number, s = 1) =>
+  `M${x - 10 * s} ${y} C${x - 14 * s} ${y} ${x - 14 * s} ${y - 7 * s} ${x - 9 * s} ${y - 7 * s} ` +
+  `C${x - 8 * s} ${y - 13 * s} ${x + s} ${y - 14 * s} ${x + 3 * s} ${y - 9 * s} ` +
+  `C${x + 7 * s} ${y - 12 * s} ${x + 13 * s} ${y - 8 * s} ${x + 11 * s} ${y - 3 * s} ` +
+  `C${x + 14 * s} ${y - 2 * s} ${x + 13 * s} ${y} ${x + 10 * s} ${y} Z`
+
+// A circle as a path, so it can join the other strokes.
+const sun = (cx: number, cy: number, r: number) =>
+  `M${cx - r} ${cy} a${r} ${r} 0 1 0 ${r * 2} 0 a${r} ${r} 0 1 0 ${-r * 2} 0`
+
+const WEATHER_ART: Record<Weather, string> = {
+  clear: `${sun(24, 24, 7)} ${rays(24, 24, 0, 315, 8, 11, 17)}`,
+  'partly-cloudy': `${sun(29, 18, 6)} ${rays(29, 18, -150, 20, 5, 9, 13)} ${cloud(20, 36, 1)}`,
+  overcast: `${cloud(29, 26, 0.85)} ${cloud(20, 37, 1.05)}`,
+  rainy: `${cloud(24, 27, 1.1)} M17 32 L15 37 M24 32 L22 38 M31 32 L29 37 M20 39 L19 42 M27 40 L26 43`,
+}
+
+export function weatherArt(weather: Weather): string {
+  return sketch(WEATHER_ART[weather])
 }

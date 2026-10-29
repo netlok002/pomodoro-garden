@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { speciesArt, stageArt } from './art.ts'
+import { speciesArt, stageArt, weatherArt } from './art.ts'
+import { WEATHERS } from './weather.ts'
 import { SPECIES } from './species.ts'
 
 describe('speciesArt', () => {
@@ -14,6 +15,14 @@ describe('stageArt', () => {
   it('has a drawing for every growing stage', () => {
     for (const stage of ['seed', 'sprout', 'stem', 'bud'] as const) {
       expect(stageArt(stage)).toContain('<svg')
+    }
+  })
+})
+
+describe('weatherArt', () => {
+  it('has a drawing for every weather', () => {
+    for (const weather of WEATHERS) {
+      expect(weatherArt(weather)).toContain('<svg')
     }
   })
 })
