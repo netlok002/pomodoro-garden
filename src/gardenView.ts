@@ -1,6 +1,7 @@
 import { GARDEN_CAPACITY, type Garden } from './garden.ts'
 import { getSpecies } from './species.ts'
-import { plantGlyph } from './plantView.ts'
+import { plantArt } from './plantView.ts'
+import { speciesArt } from './art.ts'
 
 // onSproutClick is omitted while a timer runs, so sprouts can't be resumed mid-session.
 export function renderGarden(container: HTMLElement, garden: Garden, onSproutClick?: (slotIndex: number) => void) {
@@ -10,14 +11,14 @@ export function renderGarden(container: HTMLElement, garden: Garden, onSproutCli
 
     const species = getSpecies(plant.speciesId)
     if (plant.kind === 'flower') {
-      return `<div class="garden-slot" title="${species.name}">${species.glyph}</div>`
+      return `<div class="garden-slot" title="${species.name}">${speciesArt(species.id)}</div>`
     }
 
     const minutesLeft = Math.ceil((species.durationMinutes * 60 - plant.elapsedSeconds) / 60)
     const clickable = onSproutClick ? ' clickable' : ''
     return `
       <div class="garden-slot sprout${clickable}" data-slot="${index}" title="${species.name} sprout — ${minutesLeft} min left">
-        ${plantGlyph(species, plant.elapsedSeconds)}
+        ${plantArt(species, plant.elapsedSeconds)}
         <span class="garden-slot-minutes">${minutesLeft}m</span>
       </div>
     `

@@ -1,10 +1,12 @@
 import './style.css'
 import { initSession } from './session.ts'
 import { initDevSpeed } from './devSpeed.ts'
+import { SKETCH_FILTERS } from './art.ts'
 
 initDevSpeed()
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
+  ${SKETCH_FILTERS}
   <main>
     <div id="plant"></div>
     <div id="timer-display"></div>
