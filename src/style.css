@@ -220,3 +220,18 @@ main {
   font-size: 0.75rem;
   color: var(--ink-soft);
 }
+
+.garden-slot.flower.clickable {
+  cursor: pointer;
+}
+
+.garden-slot.flower.clickable:hover {
+  background: rgba(217, 165, 168, 0.35);
+}
+
+.note {
+  min-height: 1.4em;
+  margin: 1rem 0 0;
+  font-style: italic;
+  color: var(--ink-soft);
+}

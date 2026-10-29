@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { GARDEN_CAPACITY, isFull, placePlant, type Garden, type Plant } from './garden.ts'
+import { GARDEN_CAPACITY, isFull, placePlant, removePlant, type Garden, type Plant } from './garden.ts'
 
 const flower: Plant = { kind: 'flower', speciesId: 'glowcap' }
 const sprout: Plant = { kind: 'sprout', speciesId: 'veilvine', elapsedSeconds: 600 }
@@ -41,5 +41,16 @@ describe('placePlant', () => {
     const fullWithSprout = [...gardenOf(9), sprout]
     const grown: Plant = { kind: 'flower', speciesId: 'veilvine' }
     expect(placePlant(fullWithSprout, grown, 9)[9]).toEqual(grown)
+  })
+})
+
+describe('removePlant', () => {
+  it('takes the plant out of its slot, shifting later plants down', () => {
+    const other: Plant = { kind: 'flower', speciesId: 'murkmoss' }
+    expect(removePlant([flower, sprout, other], 1)).toEqual([flower, other])
+  })
+
+  it('frees space in a full garden', () => {
+    expect(isFull(removePlant(gardenOf(10), 0))).toBe(false)
   })
 })

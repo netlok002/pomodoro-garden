@@ -1,5 +1,7 @@
 import { startTimer, formatTime } from './timer.ts'
-import { isFull, placePlant, type Garden } from './garden.ts'
+import { isFull, placePlant, removePlant, type Garden } from './garden.ts'
+import { recordPick, type Book } from './book.ts'
+import { localDateKey } from './dates.ts'
 import { SPECIES, getSpecies } from './species.ts'
 import { loadState, saveState } from './storage.ts'
 import { playDoneSound, playStartSound } from './sound.ts'
@@ -19,23 +21,40 @@ export function initSession(
   controls: HTMLElement,
   plantContainer: HTMLElement,
   gardenContainer: HTMLElement,
+  noteContainer: HTMLElement,
 ) {
-  let garden: Garden = loadState().garden
+  const saved = loadState()
+  let garden: Garden = saved.garden
+  let book: Book = saved.book
   let selectedSpeciesId = SPECIES[0].id
+
+  const save = () => saveState({ garden, book, lastSeen: Date.now() })
 
   const updateGarden = (next: Garden) => {
     garden = next
-    saveState({ garden, lastSeen: Date.now() })
+    save()
   }
 
-  const goIdle = () => {
+  const pickFlower = (slotIndex: number) => {
+    const flower = garden[slotIndex]
+    if (flower.kind !== 'flower') return
+    book = recordPick(book, flower.speciesId, 'normal', localDateKey(new Date()))
+    updateGarden(removePlant(garden, slotIndex))
+    goIdle(`Pressed a ${getSpecies(flower.speciesId).name} into your book.`)
+  }
+
+  const goIdle = (note = '') => {
     const species = getSpecies(selectedSpeciesId)
     renderSeedChoice(plantContainer, species)
-    renderGarden(gardenContainer, garden, (slotIndex) => {
-      const sprout = garden[slotIndex]
-      if (sprout.kind !== 'sprout') return
-      goRunning({ speciesId: sprout.speciesId, startElapsedSeconds: sprout.elapsedSeconds, slotIndex })
+    renderGarden(gardenContainer, garden, {
+      onSproutClick: (slotIndex) => {
+        const sprout = garden[slotIndex]
+        if (sprout.kind !== 'sprout') return
+        goRunning({ speciesId: sprout.speciesId, startElapsedSeconds: sprout.elapsedSeconds, slotIndex })
+      },
+      onFlowerClick: pickFlower,
     })
+    noteContainer.textContent = note
 
     display.innerHTML = `<span id="timer-value" class="timer-value">${formatTime(species.durationMinutes * 60)}</span>`
     display.querySelector<HTMLSpanElement>('#timer-value')!.addEventListener('click', () => {
@@ -46,7 +65,7 @@ export function initSession(
     })
 
     if (isFull(garden)) {
-      controls.innerHTML = '<div class="select-option disabled">Your garden is full — pick a flower to make room</div>'
+      controls.innerHTML = '<div class="select-option disabled">Your garden is full — click a flower to pick it</div>'
       return
     }
     controls.innerHTML = '<div id="start-button" class="select-option selected">❯ Plant</div>'
@@ -61,6 +80,7 @@ export function initSession(
     const remainingSeconds = totalSeconds - planting.startElapsedSeconds
 
     playStartSound()
+    noteContainer.textContent = ''
     renderGarden(gardenContainer, garden)
     renderGrowingPlant(plantContainer, species, planting.startElapsedSeconds)
     controls.innerHTML = `

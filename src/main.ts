@@ -12,6 +12,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     <div id="timer-display"></div>
     <div id="controls"></div>
     <div id="garden" class="garden"></div>
+    <p id="note" class="note"></p>
   </main>
 `
 
@@ -20,4 +21,5 @@ initSession(
   document.querySelector<HTMLDivElement>('#controls')!,
   document.querySelector<HTMLDivElement>('#plant')!,
   document.querySelector<HTMLDivElement>('#garden')!,
+  document.querySelector<HTMLParagraphElement>('#note')!,
 )

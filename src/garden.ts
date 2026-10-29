@@ -26,3 +26,7 @@ export function placePlant(garden: Garden, plant: Plant, slotIndex?: number): Ga
   if (isFull(garden)) throw new Error('Garden is full')
   return [...garden, plant]
 }
+
+export function removePlant(garden: Garden, slotIndex: number): Garden {
+  return garden.filter((_, index) => index !== slotIndex)
+}
