@@ -6,6 +6,22 @@
   src: url('/fonts/vt323.woff2') format('woff2');
 }
 
+/* Midsommar palette: sunlit paper, faded folk-embroidery colours, soft brown ink. */
+:root {
+  --paper: #f5eedb;
+  --paper-deep: #ebe0c4;
+  --ink: #5b4e3f;
+  --ink-soft: #9a8b74;
+  --rose: #d9a5a8;
+  --butter: #efd88e;
+  --sage: #b4c2a0;
+  --sky: #a9c6d8;
+  --lavender: #c1b2d3;
+
+  /* Fine paper grain, drawn as SVG noise tinted toward the ink colour. */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.36 0 0 0 0 0.3 0 0 0 0 0.22 0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -14,40 +30,19 @@ body {
   justify-content: center;
   font-family: 'VT323', ui-monospace, 'Courier New', monospace;
   font-size: 1.25rem;
-  background: #000;
-  color: #33ff33;
-  position: relative;
+  color: var(--ink);
+  background:
+    var(--grain),
+    radial-gradient(ellipse at 50% 35%, rgba(255, 250, 232, 0.9) 0%, rgba(255, 250, 232, 0) 60%),
+    radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 55%, rgba(201, 176, 130, 0.35) 100%),
+    var(--paper);
+  background-attachment: fixed;
   overflow: hidden;
-}
-
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: repeating-linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0) 0px,
-    rgba(0, 0, 0, 0.15) 1px,
-    rgba(0, 0, 0, 0.15) 2px
-  );
-  pointer-events: none;
-}
-
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 0.7) 100%);
-  pointer-events: none;
 }
 
 main {
   text-align: center;
   position: relative;
-}
-
-#plant {
-  text-shadow: 0 0 6px currentColor, 0 0 12px currentColor;
 }
 
 #timer-display {
@@ -57,7 +52,7 @@ main {
 
 .timer-value {
   cursor: pointer;
-  border-bottom: 1px dashed currentColor;
+  border-bottom: 1px dashed var(--ink-soft);
 }
 
 .plant-glyph {
@@ -80,22 +75,23 @@ main {
 .select-option {
   padding: 0.15rem 0.75rem;
   cursor: pointer;
+  border-radius: 2px;
 }
 
 .select-option.selected {
-  background: #33ff33;
-  color: #000;
+  background: var(--rose);
+  color: var(--paper);
 }
 
 .select-option.disabled {
   cursor: default;
-  opacity: 0.6;
+  color: var(--ink-soft);
 }
 
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(245, 238, 219, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -108,9 +104,7 @@ main {
   aspect-ratio: 1 / 1;
   border-radius: 50%;
   clip-path: circle(50%);
-  background: rgba(0, 0, 0, 0.9);
-  border: 1px solid #33ff33;
-  box-shadow: 0 0 8px rgba(51, 255, 51, 0.6);
+  background: var(--grain), var(--paper);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -129,34 +123,22 @@ main {
 
 .seed-wedge {
   fill: transparent;
-  stroke: #33ff33;
-  stroke-width: 1;
+  stroke: var(--ink-soft);
+  stroke-width: 0.75;
   cursor: pointer;
   transition: fill 0.15s ease;
 }
 
 .seed-wedge:hover {
-  fill: rgba(51, 255, 51, 0.25);
+  fill: rgba(180, 194, 160, 0.45);
 }
 
 .seed-wedge.selected {
-  fill: rgba(51, 255, 51, 0.4);
-}
-
-.dev-speed-badge {
-  position: fixed;
-  top: 0.75rem;
-  right: 0.75rem;
-  font-size: 0.9rem;
-  color: #33ff33;
-  text-shadow: 0 0 6px currentColor;
-  z-index: 20;
-  pointer-events: none;
+  fill: rgba(239, 216, 142, 0.6);
 }
 
 .seed-wedge-minutes {
-  fill: #33ff33;
-  opacity: 0.55;
+  fill: var(--ink-soft);
   font-family: inherit;
   font-size: 12px;
   text-anchor: middle;
@@ -171,6 +153,16 @@ main {
   pointer-events: none;
 }
 
+.dev-speed-badge {
+  position: fixed;
+  top: 0.75rem;
+  right: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  z-index: 20;
+  pointer-events: none;
+}
+
 .garden {
   display: grid;
   grid-template-columns: repeat(5, 3rem);
@@ -182,7 +174,9 @@ main {
 .garden-slot {
   position: relative;
   height: 3rem;
-  border: 1px solid rgba(51, 255, 51, 0.4);
+  border: 1px solid var(--ink-soft);
+  border-radius: 3px;
+  background: rgba(255, 250, 232, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -190,8 +184,14 @@ main {
 }
 
 .garden-slot.empty {
-  opacity: 0.4;
+  border-style: dashed;
+  background: transparent;
+  color: var(--ink-soft);
   font-size: 1rem;
+}
+
+.garden-slot.sprout {
+  background: rgba(180, 194, 160, 0.3);
 }
 
 .garden-slot.sprout.clickable {
@@ -199,7 +199,7 @@ main {
 }
 
 .garden-slot.sprout.clickable:hover {
-  background: rgba(51, 255, 51, 0.2);
+  background: rgba(180, 194, 160, 0.6);
 }
 
 .garden-slot-minutes {
@@ -207,4 +207,5 @@ main {
   bottom: 0;
   right: 0.2rem;
   font-size: 0.75rem;
+  color: var(--ink-soft);
 }
