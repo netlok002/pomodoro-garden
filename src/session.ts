@@ -1,5 +1,5 @@
 import { startTimer, formatTime } from './timer.ts'
-import { nextEmptySlot, isFull, placePlant, removePlant, type Garden } from './garden.ts'
+import { nextEmptySlot, isFull, placePlant, removePlant, type Garden, type PendingBloom } from './garden.ts'
 import { recordPick, type Book } from './book.ts'
 import { localDateKey } from './dates.ts'
 import { SPECIES, getSpecies } from './species.ts'
@@ -43,9 +43,10 @@ export function initSession(elements: SessionElements) {
   let garden: Garden = saved.garden
   let book: Book = saved.book
   let weatherOverride: WeatherOverride | null = saved.weatherOverride
+  let pendingBloom: PendingBloom | null = saved.pendingBloom
   let selectedSpeciesId = SPECIES[0].id
 
-  const save = () => saveState({ garden, book, weatherOverride, lastSeen: Date.now() })
+  const save = () => saveState({ garden, book, weatherOverride, pendingBloom, lastSeen: Date.now() })
 
   const updateGarden = (next: Garden) => {
     garden = next
@@ -66,13 +67,17 @@ export function initSession(elements: SessionElements) {
     })
   }
 
+  const pressIntoBook = (speciesId: string, perfect: boolean) => {
+    book = recordPick(book, speciesId, perfect ? 'perfect' : 'normal', todayKey())
+    return `Pressed a ${perfect ? 'perfect ' : ''}${getSpecies(speciesId).name} into your book.`
+  }
+
   const pickFlower = (slotIndex: number) => {
     const flower = garden[slotIndex]
     if (flower?.kind !== 'flower') return
-    book = recordPick(book, flower.speciesId, flower.perfect ? 'perfect' : 'normal', todayKey())
+    const note = pressIntoBook(flower.speciesId, flower.perfect)
     updateGarden(removePlant(garden, slotIndex))
-    const name = getSpecies(flower.speciesId).name
-    goIdle(`Pressed a ${flower.perfect ? 'perfect ' : ''}${name} into your book.`)
+    goIdle(note)
   }
 
   const goIdle = (note = '') => {
@@ -143,11 +148,13 @@ export function initSession(elements: SessionElements) {
 
     const onDone = () => {
       playTimerDone()
-      const perfect = isPerfect(weatherSeconds, species.perfectWeather)
-      // Saved straight away, so closing the tab mid-celebration never loses the flower.
+      // The bloom waits (saved, so a reload can't lose it) until the player chooses.
+      // A resumed sprout's slot is cleared and held for it.
       const slotIndex = planting.slotIndex ?? nextEmptySlot(garden)
-      updateGarden(placePlant(garden, { kind: 'flower', speciesId: species.id, perfect }, slotIndex))
-      goCelebrating(species.id, perfect, slotIndex)
+      if (planting.slotIndex !== undefined) garden = removePlant(garden, planting.slotIndex)
+      pendingBloom = { speciesId: species.id, perfect: isPerfect(weatherSeconds, species.perfectWeather), slotIndex }
+      save()
+      goCelebrating(pendingBloom)
     }
 
     const cancelTimer = startTimer(elements.display, remainingSeconds, onDone, onTick)
@@ -163,10 +170,11 @@ export function initSession(elements: SessionElements) {
     })
   }
 
-  // The bloom is already in its garden slot; the player keeps it there or picks it.
-  const goCelebrating = (speciesId: string, perfect: boolean, slotIndex: number) => {
-    const species = getSpecies(speciesId)
-    renderCelebration(elements.plant, species, perfect)
+  // The fresh bloom is shown off first; it only reaches the garden or the book once chosen.
+  const goCelebrating = (bloom: PendingBloom) => {
+    const species = getSpecies(bloom.speciesId)
+    renderWeather()
+    renderCelebration(elements.plant, species, bloom.perfect)
     renderGarden(elements.garden, garden)
     elements.display.innerHTML = ''
     elements.note.textContent = ''
@@ -175,14 +183,21 @@ export function initSession(elements: SessionElements) {
       <div id="pick-button" class="select-option">❯ Pick into book</div>
     `
     elements.controls.querySelector<HTMLDivElement>('#keep-button')!.addEventListener('click', () => {
-      goIdle(`Planted a ${perfect ? 'perfect ' : ''}${species.name} in your garden.`)
+      garden = placePlant(garden, { kind: 'flower', speciesId: bloom.speciesId, perfect: bloom.perfect }, bloom.slotIndex)
+      pendingBloom = null
+      save()
+      goIdle(`Planted a ${bloom.perfect ? 'perfect ' : ''}${species.name} in your garden.`)
     })
     elements.controls.querySelector<HTMLDivElement>('#pick-button')!.addEventListener('click', () => {
-      pickFlower(slotIndex)
+      const note = pressIntoBook(bloom.speciesId, bloom.perfect)
+      pendingBloom = null
+      save()
+      goIdle(note)
     })
   }
 
   elements.bookButton.addEventListener('click', () => openBook(book))
 
-  goIdle()
+  if (pendingBloom) goCelebrating(pendingBloom)
+  else goIdle()
 }

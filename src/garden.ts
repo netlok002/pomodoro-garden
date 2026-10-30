@@ -17,6 +17,14 @@ export interface Sprout {
 
 export type Plant = Flower | Sprout
 
+// A flower that just bloomed, waiting for the player to plant it or pick it.
+// slotIndex is the garden slot held for it if planted.
+export interface PendingBloom {
+  speciesId: string
+  perfect: boolean
+  slotIndex: number
+}
+
 // A fixed row of slots; null is an empty patch of ground. Plants never move once placed.
 export type Slot = Plant | null
 

@@ -1,4 +1,4 @@
-import { GARDEN_CAPACITY, PLANTING_ORDER, emptyGarden, type Garden, type Plant } from './garden.ts'
+import { GARDEN_CAPACITY, PLANTING_ORDER, emptyGarden, type Garden, type PendingBloom, type Plant } from './garden.ts'
 import { recordPick, type Book } from './book.ts'
 import { localDateKey } from './dates.ts'
 import type { WeatherOverride } from './weather.ts'
@@ -9,6 +9,7 @@ export interface StoredState {
   garden: Garden
   book: Book
   weatherOverride: WeatherOverride | null
+  pendingBloom: PendingBloom | null
   lastSeen: number
 }
 
@@ -46,7 +47,7 @@ function toSlots(saved: (Plant | null)[], book: Book, today: string): { garden: 
 }
 
 export function parseState(raw: string | null, now: number): StoredState {
-  const fresh: StoredState = { garden: emptyGarden(), book: {}, weatherOverride: null, lastSeen: now }
+  const fresh: StoredState = { garden: emptyGarden(), book: {}, weatherOverride: null, pendingBloom: null, lastSeen: now }
   if (!raw) return fresh
   try {
     const parsed = JSON.parse(raw)
@@ -57,6 +58,7 @@ export function parseState(raw: string | null, now: number): StoredState {
       garden,
       book,
       weatherOverride: parsed.weatherOverride ?? null,
+      pendingBloom: parsed.pendingBloom ?? null,
       lastSeen: parsed.lastSeen ?? now,
     }
   } catch {

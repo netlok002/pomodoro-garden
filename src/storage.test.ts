@@ -3,7 +3,7 @@ import { parseState } from './storage.ts'
 
 const NOW = 1_000_000
 const EMPTY_SLOTS = (count: number) => Array(count).fill(null)
-const FRESH = { garden: EMPTY_SLOTS(5), book: {}, weatherOverride: null, lastSeen: NOW }
+const FRESH = { garden: EMPTY_SLOTS(5), book: {}, weatherOverride: null, pendingBloom: null, lastSeen: NOW }
 
 describe('parseState', () => {
   it('starts with an empty garden and book when nothing is saved', () => {
@@ -20,6 +20,7 @@ describe('parseState', () => {
       ],
       book: { murkmoss: { normal: { count: 2, firstFound: '2026-10-29' } } },
       weatherOverride: { date: '2026-10-29', weather: 'clear' },
+      pendingBloom: { speciesId: 'glowcap', perfect: true, slotIndex: 1 },
       lastSeen: 500,
     }
     expect(parseState(JSON.stringify(saved), NOW)).toEqual(saved)
@@ -41,6 +42,7 @@ describe('parseState', () => {
       ],
       book: {},
       weatherOverride: null,
+      pendingBloom: null,
       lastSeen: 500,
     })
   })
