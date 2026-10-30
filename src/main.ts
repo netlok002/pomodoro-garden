@@ -101,3 +101,9 @@ function checkPlayingSoon() {
 setInterval(checkPlaying, PLAYING_CHECK_MS)
 document.addEventListener('visibilitychange', checkPlaying)
 checkPlaying()
+
+// Offline support for the installed app (published site only; it would get in the way
+// of the dev server's live reloading).
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  void navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`)
+}
