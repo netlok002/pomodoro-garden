@@ -464,3 +464,85 @@ main {
   aspect-ratio: 320 / 64;
   margin-top: calc(-1 * (var(--slot) / 12 + var(--box-width) / 5 / 8));
 }
+
+/* Book tabs and the Settings panel. */
+.book-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 1.25rem;
+  margin: 0.4rem 0 0.25rem;
+}
+
+.book-tab {
+  padding: 0.15rem 0.2rem;
+  border: none;
+  border-bottom: 1px solid transparent;
+  background: none;
+  font: inherit;
+  font-style: italic;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.book-tab.active {
+  color: var(--ink);
+  border-bottom-color: var(--ink);
+}
+
+.book-settings {
+  max-width: 24rem;
+  margin: 1.25rem auto 0;
+}
+
+.book-settings-heading {
+  margin: 0;
+  font-weight: normal;
+  font-size: 1.2rem;
+}
+
+.zip-form {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.zip-input {
+  width: 6.5rem;
+  padding: 0.3rem 0.5rem;
+  border: none;
+  border-bottom: 1px solid var(--ink-soft);
+  background: transparent;
+  font: inherit;
+  font-size: 1.15rem;
+  letter-spacing: 0.12em;
+  text-align: center;
+  color: var(--ink);
+}
+
+.zip-input:focus {
+  outline: none;
+  border-bottom-color: var(--rose);
+}
+
+.book-action {
+  padding: 0.2rem 0.6rem;
+  border: 1px solid var(--ink-soft);
+  border-radius: 2px;
+  background: none;
+  font: inherit;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.book-action:hover {
+  background: rgba(217, 165, 168, 0.25);
+}
+
+.zip-status {
+  min-height: 1.4em;
+  margin: 0.9rem 0 0;
+  font-style: italic;
+  color: var(--ink-soft);
+}

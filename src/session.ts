@@ -5,13 +5,21 @@ import { localDateKey } from './dates.ts'
 import { SPECIES, getSpecies } from './species.ts'
 import {
   addWeatherTime,
-  currentWeather,
   forecast,
   isPerfect,
   type WeatherOverride,
   type WeatherTally,
 } from './weather.ts'
 import { loadState, saveState } from './storage.ts'
+import {
+  ZipNotFoundError,
+  fetchRealForecast,
+  isFresh,
+  isValidZip,
+  lookupZip,
+  type CachedForecast,
+  type Place,
+} from './realWeather.ts'
 import { playTimerDone, playTimerStart } from './sfx.ts'
 import { openSeedPicker } from './seedPicker.ts'
 import { openWeatherPicker } from './weatherPicker.ts'
@@ -44,9 +52,12 @@ export function initSession(elements: SessionElements) {
   let book: Book = saved.book
   let weatherOverride: WeatherOverride | null = saved.weatherOverride
   let pendingBloom: PendingBloom | null = saved.pendingBloom
+  let place: Place | null = saved.place
+  let forecastCache: CachedForecast | null = saved.forecastCache
   let selectedSpeciesId = SPECIES[0].id
 
-  const save = () => saveState({ garden, book, weatherOverride, pendingBloom, lastSeen: Date.now() })
+  const save = () =>
+    saveState({ garden, book, weatherOverride, pendingBloom, place, forecastCache, lastSeen: Date.now() })
 
   const updateGarden = (next: Garden) => {
     garden = next
@@ -54,11 +65,65 @@ export function initSession(elements: SessionElements) {
   }
 
   const todayKey = () => localDateKey(new Date())
-  const weatherNow = () => currentWeather(todayKey(), weatherOverride)
+
+  // Real weather: used only while today's cached forecast matches the saved zip.
+  let refreshing = false
+  let refreshFailed = false
+  const realForecast = () => (place && isFresh(forecastCache, todayKey(), place.zip) ? forecastCache!.forecast : null)
+  const currentForecast = () => forecast(new Date(), weatherOverride, realForecast())
+  const weatherNow = () => currentForecast().today
+
+  const refreshForecast = async () => {
+    if (!place || refreshing || realForecast()) return
+    refreshing = true
+    try {
+      forecastCache = { date: todayKey(), zip: place.zip, forecast: await fetchRealForecast(place) }
+      refreshFailed = false
+      save()
+      renderWeather()
+    } catch {
+      refreshFailed = true
+    } finally {
+      refreshing = false
+    }
+  }
+
+  const weatherStatus = () => {
+    if (!place) return 'No zip code set, so the weather is simulated.'
+    const where = `${place.name}, ${place.state}`
+    if (realForecast()) return `Growing under the real forecast for ${where}.`
+    if (refreshFailed) return `Couldn't reach the weather service for ${where}, so the weather is simulated for now.`
+    return `Fetching the forecast for ${where}…`
+  }
+
+  const saveZip = async (zip: string) => {
+    if (!isValidZip(zip)) return 'Please enter a 5-digit US zip code.'
+    try {
+      place = await lookupZip(zip)
+    } catch (error) {
+      return error instanceof ZipNotFoundError
+        ? `Couldn't find zip code ${zip.trim()}.`
+        : "Couldn't reach the zip code lookup. Check your connection and try again."
+    }
+    forecastCache = null
+    save()
+    await refreshForecast()
+    renderWeather()
+    return weatherStatus()
+  }
+
+  const clearZip = () => {
+    place = null
+    forecastCache = null
+    refreshFailed = false
+    save()
+    renderWeather()
+    return weatherStatus()
+  }
 
   const renderWeather = () => {
     const overriddenToday = weatherOverride?.date === todayKey()
-    renderForecast(elements.forecast, forecast(new Date(), weatherOverride), () => {
+    renderForecast(elements.forecast, currentForecast(), () => {
       openWeatherPicker(overriddenToday ? weatherOverride!.weather : null, (choice) => {
         weatherOverride = choice ? { date: todayKey(), weather: choice } : null
         save()
@@ -83,6 +148,7 @@ export function initSession(elements: SessionElements) {
   const goIdle = (note = '') => {
     const species = getSpecies(selectedSpeciesId)
     renderWeather()
+    void refreshForecast()
     renderSeedChoice(elements.plant, species)
     renderGarden(elements.garden, garden, {
       onSproutClick: (slotIndex) => {
@@ -196,7 +262,9 @@ export function initSession(elements: SessionElements) {
     })
   }
 
-  elements.bookButton.addEventListener('click', () => openBook(book))
+  elements.bookButton.addEventListener('click', () =>
+    openBook(book, { zip: place?.zip ?? '', weatherStatus: weatherStatus(), onSaveZip: saveZip, onClearZip: clearZip }),
+  )
 
   if (pendingBloom) goCelebrating(pendingBloom)
   else goIdle()

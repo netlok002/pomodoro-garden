@@ -8,6 +8,8 @@ const CLICKABLE = [
   '.garden-slot.clickable',
   '.forecast-today',
   '.book-art-toggle',
+  '.book-tab',
+  '.book-action',
 ].join(', ')
 
 // One page-wide listener, so new buttons get the sound without extra wiring.

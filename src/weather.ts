@@ -55,12 +55,16 @@ export interface Forecast {
   tomorrow: Weather
 }
 
-export function forecast(now: Date, override: WeatherOverride | null): Forecast {
+// The three days shown in the arc: the real forecast when we have one, otherwise the
+// simulation. A manual override set for today always wins for today.
+export function forecast(now: Date, override: WeatherOverride | null, real: Forecast | null = null): Forecast {
   const dayOffset = (days: number) =>
     localDateKey(new Date(now.getFullYear(), now.getMonth(), now.getDate() + days))
+  const todayKey = dayOffset(0)
+  const overrideToday = override && override.date === todayKey ? override.weather : null
   return {
-    yesterday: simulatedWeather(dayOffset(-1)),
-    today: currentWeather(dayOffset(0), override),
-    tomorrow: simulatedWeather(dayOffset(1)),
+    yesterday: real?.yesterday ?? simulatedWeather(dayOffset(-1)),
+    today: overrideToday ?? real?.today ?? simulatedWeather(todayKey),
+    tomorrow: real?.tomorrow ?? simulatedWeather(dayOffset(1)),
   }
 }

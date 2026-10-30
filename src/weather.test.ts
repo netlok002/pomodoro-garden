@@ -79,3 +79,19 @@ describe('forecast', () => {
     expect(forecast(new Date(2026, 10, 1), null).yesterday).toBe(simulatedWeather('2026-10-31'))
   })
 })
+
+describe('forecast with a real forecast', () => {
+  const today = new Date(2026, 9, 29, 15, 0)
+  const real = { yesterday: 'rainy', today: 'overcast', tomorrow: 'clear' } as const
+
+  it('uses the real forecast instead of the simulation', () => {
+    expect(forecast(today, null, real)).toEqual(real)
+  })
+
+  it('still lets a manual override win for today', () => {
+    expect(forecast(today, { date: '2026-10-29', weather: 'partly-cloudy' }, real)).toEqual({
+      ...real,
+      today: 'partly-cloudy',
+    })
+  })
+})

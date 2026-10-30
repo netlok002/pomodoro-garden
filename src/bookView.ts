@@ -39,25 +39,86 @@ function cardHtml(species: Species, book: Book): string {
   `
 }
 
-export function openBook(book: Book) {
+// What the Settings tab needs from the session. The book never talks to the network itself.
+export interface BookSettings {
+  zip: string
+  weatherStatus: string
+  onSaveZip: (zip: string) => Promise<string>
+  onClearZip: () => string
+}
+
+function settingsHtml(settings: BookSettings): string {
+  return `
+    <div class="book-settings">
+      <h3 class="book-settings-heading">Weather</h3>
+      <p class="book-detail">Enter a US zip code to grow your garden under your real local forecast.</p>
+      <form class="zip-form">
+        <input class="zip-input" name="zip" inputmode="numeric" maxlength="5" placeholder="zip code"
+          aria-label="US zip code" value="${settings.zip}" />
+        <button type="submit" class="book-action">Save</button>
+        <button type="button" class="book-action zip-clear">Clear</button>
+      </form>
+      <p class="zip-status" role="status">${settings.weatherStatus}</p>
+    </div>
+  `
+}
+
+export function openBook(book: Book, settings: BookSettings) {
   playBookOpen()
   openModal((body) => {
     const { found, total } = bookProgress(book, SPECIES.length)
     body.innerHTML = `
       <div class="book">
         <h2 class="book-title">Flower Book</h2>
-        <p class="book-progress">${found} of ${total} found</p>
-        <div class="book-grid">
-          ${SPECIES.map((species) => cardHtml(species, book)).join('')}
+        <div class="book-tabs" role="tablist">
+          <button class="book-tab active" data-tab="flowers" role="tab">Flowers</button>
+          <button class="book-tab" data-tab="settings" role="tab">Settings</button>
         </div>
+        <div class="book-panel" data-panel="flowers">
+          <p class="book-progress">${found} of ${total} found</p>
+          <div class="book-grid">
+            ${SPECIES.map((species) => cardHtml(species, book)).join('')}
+          </div>
+        </div>
+        <div class="book-panel" data-panel="settings" hidden>${settingsHtml(settings)}</div>
       </div>
     `
 
-    const onClick = (event: MouseEvent) => {
-      const toggle = (event.target as HTMLElement).closest('.book-art-toggle')
-      toggle?.classList.toggle('perfect')
+    const status = body.querySelector<HTMLElement>('.zip-status')!
+    const input = body.querySelector<HTMLInputElement>('.zip-input')!
+
+    const showTab = (tab: string) => {
+      body.querySelectorAll<HTMLElement>('.book-tab').forEach((button) => {
+        button.classList.toggle('active', button.dataset.tab === tab)
+      })
+      body.querySelectorAll<HTMLElement>('.book-panel').forEach((panel) => {
+        panel.hidden = panel.dataset.panel !== tab
+      })
     }
+
+    const onClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      const tab = target.closest<HTMLElement>('.book-tab')
+      if (tab) showTab(tab.dataset.tab!)
+      target.closest('.book-art-toggle')?.classList.toggle('perfect')
+      if (target.closest('.zip-clear')) {
+        input.value = ''
+        status.textContent = settings.onClearZip()
+      }
+    }
+
+    const onSubmit = async (event: SubmitEvent) => {
+      event.preventDefault()
+      status.textContent = 'Looking up your zip code…'
+      status.textContent = await settings.onSaveZip(input.value)
+    }
+
+    const form = body.querySelector<HTMLFormElement>('.zip-form')!
     body.addEventListener('click', onClick)
-    return () => body.removeEventListener('click', onClick)
+    form.addEventListener('submit', onSubmit)
+    return () => {
+      body.removeEventListener('click', onClick)
+      form.removeEventListener('submit', onSubmit)
+    }
   }, { panelClass: 'modal-page', onClose: playBookClose })
 }

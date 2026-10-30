@@ -2,6 +2,7 @@ import { GARDEN_CAPACITY, PLANTING_ORDER, emptyGarden, type Garden, type Pending
 import { recordPick, type Book } from './book.ts'
 import { localDateKey } from './dates.ts'
 import type { WeatherOverride } from './weather.ts'
+import type { CachedForecast, Place } from './realWeather.ts'
 
 const STORAGE_KEY = 'pomodoro-garden'
 
@@ -10,6 +11,8 @@ export interface StoredState {
   book: Book
   weatherOverride: WeatherOverride | null
   pendingBloom: PendingBloom | null
+  place: Place | null
+  forecastCache: CachedForecast | null
   lastSeen: number
 }
 
@@ -47,7 +50,7 @@ function toSlots(saved: (Plant | null)[], book: Book, today: string): { garden: 
 }
 
 export function parseState(raw: string | null, now: number): StoredState {
-  const fresh: StoredState = { garden: emptyGarden(), book: {}, weatherOverride: null, pendingBloom: null, lastSeen: now }
+  const fresh: StoredState = { garden: emptyGarden(), book: {}, weatherOverride: null, pendingBloom: null, place: null, forecastCache: null, lastSeen: now }
   if (!raw) return fresh
   try {
     const parsed = JSON.parse(raw)
@@ -59,6 +62,8 @@ export function parseState(raw: string | null, now: number): StoredState {
       book,
       weatherOverride: parsed.weatherOverride ?? null,
       pendingBloom: parsed.pendingBloom ?? null,
+      place: parsed.place ?? null,
+      forecastCache: parsed.forecastCache ?? null,
       lastSeen: parsed.lastSeen ?? now,
     }
   } catch {
