@@ -11,6 +11,7 @@ const CLICKABLE = [
   '.book-tab',
   '.radio-button',
   '.modal-close',
+  '.radio-bubble-settings',
   '.paper-button',
 ].join(', ')
 

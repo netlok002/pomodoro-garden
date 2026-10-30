@@ -25,6 +25,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <div id="radio-bubble" class="radio-bubble" role="status" hidden>
         <span class="radio-bubble-heading">Now playing</span>
         <span class="radio-bubble-text"></span>
+        <button type="button" class="radio-bubble-settings">Radio settings ›</button>
       </div>
       <div id="music-notes" class="music-notes" aria-hidden="true" hidden>
         <span class="music-note note-1">${noteArt('single')}</span>
@@ -56,29 +57,37 @@ initSession(
   },
 )
 
+// The radio works by tap, so it behaves the same on phones and computers:
+// the first tap shows what's playing; a second tap (or "Radio settings") opens the radio.
+// Song names come from Spotify, so they're only ever set as text.
 const radio = element('radio-button')
-radio.addEventListener('click', () => openRadio(spotify))
-
-// Hovering the radio shows what's playing in a speech bubble. Song names come from
-// Spotify, so they're only ever set as text.
 const bubble = element('radio-bubble')
 const bubbleText = bubble.querySelector<HTMLElement>('.radio-bubble-text')!
-let hovering = false
+
 const showNowPlaying = async () => {
-  hovering = true
   bubbleText.textContent = 'Tuning in…'
   bubble.hidden = false
   const text = await spotify.nowPlaying()
-  if (hovering) bubbleText.textContent = text
+  if (!bubble.hidden) bubbleText.textContent = text
 }
 const hideNowPlaying = () => {
-  hovering = false
   bubble.hidden = true
 }
-radio.addEventListener('mouseenter', () => void showNowPlaying())
-radio.addEventListener('focus', () => void showNowPlaying())
-radio.addEventListener('mouseleave', hideNowPlaying)
-radio.addEventListener('blur', hideNowPlaying)
+const openRadioSettings = () => {
+  hideNowPlaying()
+  openRadio(spotify)
+}
+
+radio.addEventListener('click', () => (bubble.hidden ? void showNowPlaying() : openRadioSettings()))
+bubble.querySelector('.radio-bubble-settings')!.addEventListener('click', openRadioSettings)
+// Tapping anywhere else, or Escape, closes the bubble.
+document.addEventListener('click', (event) => {
+  const target = event.target as Element
+  if (!radio.contains(target) && !bubble.contains(target)) hideNowPlaying()
+})
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') hideNowPlaying()
+})
 
 // Coming back from Spotify's login page: finish connecting, then show the radio to pick a playlist.
 void spotify.finishLogin().then((returnedFromSpotify) => {
