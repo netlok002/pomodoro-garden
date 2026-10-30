@@ -127,29 +127,24 @@ function playPageFlips(count: number) {
   for (const flip of pageFlipPlan(count)) playPageFlip(ctx, now + flip.delay, flip)
 }
 
-export interface Tick {
-  delay: number
-  kind: 'tick' | 'tock'
+const TICK_INTERVAL = 0.25
+
+// Start times for identical, evenly spaced clock ticks.
+export function tickPlan(count: number): number[] {
+  return Array.from({ length: count }, (_, i) => i * TICK_INTERVAL)
 }
 
-const TICK_INTERVAL = 0.16
-
-// A steady tick-tock, like winding up a kitchen timer.
-export function tickPlan(count: number): Tick[] {
-  return Array.from({ length: count }, (_, i) => ({
-    delay: i * TICK_INTERVAL,
-    kind: i % 2 === 0 ? 'tick' : 'tock',
-  }))
+// One dry mechanical tick: a tight snap of noise, a small body click and a faint metal ring.
+function clockTick(ctx: AudioContext, start: number) {
+  noiseBurst(ctx, start, 0.006, 0.06, { type: 'bandpass', from: 3500, to: 3500, q: 3 })
+  strike(ctx, 1200, start, 0.02, 0.012)
+  strike(ctx, 4200, start, 0.012, 0.02)
 }
 
 export function playTimerStart() {
   const ctx = audio()
   const now = ctx.currentTime
-  for (const { delay, kind } of tickPlan(8)) {
-    const start = now + delay
-    strike(ctx, kind === 'tick' ? 2100 : 1600, start, 0.07, 0.035, 'triangle')
-    noiseBurst(ctx, start, 0.01, 0.03, { type: 'highpass', from: 3000, to: 3000 })
-  }
+  for (const delay of tickPlan(6)) clockTick(ctx, now + delay)
 }
 
 export interface Chirp {

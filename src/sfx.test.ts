@@ -46,10 +46,8 @@ describe('pageFlipPlan', () => {
 })
 
 describe('tickPlan', () => {
-  it('alternates tick and tock at a steady pace', () => {
-    const ticks = tickPlan(4)
-    expect(ticks.map((tick) => tick.kind)).toEqual(['tick', 'tock', 'tick', 'tock'])
-    expect(ticks[1].delay - ticks[0].delay).toBeCloseTo(ticks[3].delay - ticks[2].delay)
+  it('ticks at a steady clock pace, a quarter second apart', () => {
+    expect(tickPlan(4)).toEqual([0, 0.25, 0.5, 0.75])
   })
 })
 
