@@ -79,3 +79,54 @@ describe('parseState with more plants than slots', () => {
     })
   })
 })
+
+describe('parseState cleans untrusted data', () => {
+  const load = (save: object) => parseState(JSON.stringify({ lastSeen: 1, ...save }), NOW)
+  const glowcap = { kind: 'flower', speciesId: 'glowcap', perfect: false }
+
+  it('empties slots holding unknown species or broken plants', () => {
+    const garden = [
+      glowcap,
+      { kind: 'flower', speciesId: '<img src=x onerror=alert(1)>', perfect: false },
+      { kind: 'tree', speciesId: 'glowcap' },
+      { kind: 'sprout', speciesId: 'glowcap', elapsedSeconds: 'lots', weatherSeconds: {} },
+      'not a plant',
+    ]
+    expect(load({ garden }).garden).toEqual([glowcap, null, null, null, null])
+  })
+
+  it('keeps only known weathers and sensible numbers in a sprout tally', () => {
+    const sprout = { kind: 'sprout', speciesId: 'veilvine', elapsedSeconds: 300, weatherSeconds: { rainy: 120, storm: 9, clear: -5 } }
+    expect(load({ garden: [sprout] }).garden[0]).toEqual({ ...sprout, weatherSeconds: { rainy: 120 } })
+  })
+
+  it('drops book pages for unknown species and malformed entries', () => {
+    const book = {
+      glowcap: { normal: { count: 2, firstFound: '2026-10-29' }, perfect: { count: 'many', firstFound: '2026-10-29' } },
+      '<script>': { normal: { count: 1, firstFound: '2026-10-29' } },
+      murkmoss: { normal: { count: 1, firstFound: '<b>today</b>' } },
+    }
+    expect(load({ garden: [], book }).book).toEqual({ glowcap: { normal: { count: 2, firstFound: '2026-10-29' } } })
+  })
+
+  it('drops a weather override with an unknown weather', () => {
+    expect(load({ garden: [], weatherOverride: { date: '2026-10-29', weather: 'hail' } }).weatherOverride).toBeNull()
+  })
+
+  it('drops a waiting bloom for an unknown species or slot', () => {
+    expect(load({ garden: [], pendingBloom: { speciesId: 'nope', perfect: true, slotIndex: 1 } }).pendingBloom).toBeNull()
+    expect(load({ garden: [], pendingBloom: { speciesId: 'glowcap', perfect: true, slotIndex: 9 } }).pendingBloom).toBeNull()
+  })
+
+  it('drops a place with a bad zip or missing coordinates', () => {
+    const portland = { zip: '97201', name: 'Portland', state: 'OR', latitude: 45.5, longitude: -122.7 }
+    expect(load({ garden: [], place: portland }).place).toEqual(portland)
+    expect(load({ garden: [], place: { ...portland, zip: '97201"><script>' } }).place).toBeNull()
+    expect(load({ garden: [], place: { ...portland, latitude: 'north' } }).place).toBeNull()
+  })
+
+  it('drops a cached forecast containing unknown weathers', () => {
+    const cache = { date: '2026-10-29', zip: '97201', forecast: { yesterday: 'clear', today: 'lava', tomorrow: 'clear' } }
+    expect(load({ garden: [], forecastCache: cache }).forecastCache).toBeNull()
+  })
+})

@@ -4,6 +4,7 @@ import { speciesArt } from './art.ts'
 import { bookProgress, type Book, type BookEntry } from './book.ts'
 import { SPECIES, type Species } from './species.ts'
 import { WEATHER_LABELS } from './weather.ts'
+import { escapeHtml } from './html.ts'
 
 function countLine(label: string, entry: BookEntry | undefined): string {
   return entry ? `${label} ×${entry.count}` : `${label} —`
@@ -45,6 +46,9 @@ export interface BookSettings {
   weatherStatus: string
   onSaveZip: (zip: string) => Promise<string>
   onClearZip: () => string
+  saveCode: string
+  // Returns a message, and whether the save was loaded (the book then closes).
+  onLoadSaveCode: (code: string) => { loaded: boolean; message: string }
 }
 
 function settingsHtml(settings: BookSettings): string {
@@ -54,18 +58,31 @@ function settingsHtml(settings: BookSettings): string {
       <p class="book-detail">Enter a US zip code to grow your garden under your real local forecast.</p>
       <form class="zip-form">
         <input class="zip-input" name="zip" inputmode="numeric" maxlength="5" placeholder="zip code"
-          aria-label="US zip code" value="${settings.zip}" />
+          aria-label="US zip code" value="${escapeHtml(settings.zip)}" />
         <button type="submit" class="book-action">Save</button>
         <button type="button" class="book-action zip-clear">Clear</button>
       </form>
-      <p class="zip-status" role="status">${settings.weatherStatus}</p>
+      <p class="zip-status" role="status">${escapeHtml(settings.weatherStatus)}</p>
+
+      <h3 class="book-settings-heading">Your save</h3>
+      <p class="book-detail">Copy this code to back up your garden or move it to another device.</p>
+      <textarea class="save-code" readonly aria-label="Your save code">${escapeHtml(settings.saveCode)}</textarea>
+      <div class="save-actions">
+        <button type="button" class="book-action save-copy">Copy</button>
+      </div>
+      <p class="book-detail">Paste a save code to load it. This replaces your current garden and book.</p>
+      <textarea class="save-code save-input" aria-label="Save code to load" placeholder="GARDEN1.…"></textarea>
+      <div class="save-actions">
+        <button type="button" class="book-action save-load">Load</button>
+      </div>
+      <p class="save-status" role="status"></p>
     </div>
   `
 }
 
 export function openBook(book: Book, settings: BookSettings) {
   playBookOpen()
-  openModal((body) => {
+  openModal((body, close) => {
     const { found, total } = bookProgress(book, SPECIES.length)
     body.innerHTML = `
       <div class="book">
@@ -86,6 +103,33 @@ export function openBook(book: Book, settings: BookSettings) {
 
     const status = body.querySelector<HTMLElement>('.zip-status')!
     const input = body.querySelector<HTMLInputElement>('.zip-input')!
+    const saveStatus = body.querySelector<HTMLElement>('.save-status')!
+    const saveInput = body.querySelector<HTMLTextAreaElement>('.save-input')!
+    let confirmingLoad = false
+
+    const copySaveCode = async () => {
+      const codeBox = body.querySelector<HTMLTextAreaElement>('.save-code')!
+      try {
+        await navigator.clipboard.writeText(settings.saveCode)
+        saveStatus.textContent = 'Save code copied.'
+      } catch {
+        codeBox.select()
+        saveStatus.textContent = 'Select the code above and copy it.'
+      }
+    }
+
+    // Loading replaces everything, so the first press only asks for confirmation.
+    const loadSaveCode = () => {
+      if (!confirmingLoad) {
+        confirmingLoad = true
+        saveStatus.textContent = 'This replaces your current garden and book. Press Load again to confirm.'
+        return
+      }
+      confirmingLoad = false
+      const result = settings.onLoadSaveCode(saveInput.value)
+      saveStatus.textContent = result.message
+      if (result.loaded) close()
+    }
 
     const showTab = (tab: string) => {
       body.querySelectorAll<HTMLElement>('.book-tab').forEach((button) => {
@@ -105,6 +149,13 @@ export function openBook(book: Book, settings: BookSettings) {
         input.value = ''
         status.textContent = settings.onClearZip()
       }
+      if (target.closest('.save-copy')) void copySaveCode()
+      if (target.closest('.save-load')) loadSaveCode()
+    }
+
+    // Editing the pasted code cancels a pending confirmation.
+    const onSaveInput = () => {
+      confirmingLoad = false
     }
 
     const onSubmit = async (event: SubmitEvent) => {
@@ -116,9 +167,11 @@ export function openBook(book: Book, settings: BookSettings) {
     const form = body.querySelector<HTMLFormElement>('.zip-form')!
     body.addEventListener('click', onClick)
     form.addEventListener('submit', onSubmit)
+    saveInput.addEventListener('input', onSaveInput)
     return () => {
       body.removeEventListener('click', onClick)
       form.removeEventListener('submit', onSubmit)
+      saveInput.removeEventListener('input', onSaveInput)
     }
   }, { panelClass: 'modal-page', onClose: playBookClose })
 }

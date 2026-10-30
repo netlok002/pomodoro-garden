@@ -546,3 +546,41 @@ main {
   font-style: italic;
   color: var(--ink-soft);
 }
+
+.book-settings-heading + .book-detail {
+  margin-top: 0.3rem;
+}
+
+.book-settings .book-settings-heading:not(:first-child) {
+  margin-top: 2rem;
+}
+
+.save-code {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  height: 4.2rem;
+  margin-top: 0.6rem;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--ink-soft);
+  border-radius: 2px;
+  background: rgba(255, 250, 232, 0.6);
+  font-family: ui-monospace, 'Courier New', monospace;
+  font-size: 0.7rem;
+  color: var(--ink);
+  resize: vertical;
+  word-break: break-all;
+}
+
+.save-actions {
+  display: flex;
+  justify-content: center;
+  margin: 0.5rem 0 0.8rem;
+}
+
+.save-status {
+  min-height: 1.4em;
+  margin: 0;
+  font-style: italic;
+  color: var(--ink-soft);
+}

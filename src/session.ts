@@ -10,7 +10,8 @@ import {
   type WeatherOverride,
   type WeatherTally,
 } from './weather.ts'
-import { loadState, saveState } from './storage.ts'
+import { loadState, requestPersistentStorage, saveState } from './storage.ts'
+import { decodeSave, encodeSave } from './saveCode.ts'
 import {
   ZipNotFoundError,
   fetchRealForecast,
@@ -55,6 +56,7 @@ export function initSession(elements: SessionElements) {
   let place: Place | null = saved.place
   let forecastCache: CachedForecast | null = saved.forecastCache
   let selectedSpeciesId = SPECIES[0].id
+  let growing = false
 
   const save = () =>
     saveState({ garden, book, weatherOverride, pendingBloom, place, forecastCache, lastSeen: Date.now() })
@@ -198,6 +200,8 @@ export function initSession(elements: SessionElements) {
     }
 
     playTimerStart()
+    growing = true
+    requestPersistentStorage()
     renderWeather()
     elements.note.textContent = ''
     renderGarden(elements.garden, garden)
@@ -213,6 +217,7 @@ export function initSession(elements: SessionElements) {
     }
 
     const onDone = () => {
+      growing = false
       playTimerDone()
       // The bloom waits (saved, so a reload can't lose it) until the player chooses.
       // A resumed sprout's slot is cleared and held for it.
@@ -226,6 +231,7 @@ export function initSession(elements: SessionElements) {
     const cancelTimer = startTimer(elements.display, remainingSeconds, onDone, onTick)
     elements.controls.querySelector<HTMLDivElement>('#cancel-button')!.addEventListener('click', () => {
       const ranSeconds = cancelTimer()
+      growing = false
       countWeatherUpTo(ranSeconds)
       const grownSeconds = planting.startElapsedSeconds + ranSeconds
       if (grownSeconds > 0) {
@@ -262,10 +268,38 @@ export function initSession(elements: SessionElements) {
     })
   }
 
+  // Replaces the whole game with a pasted save code (already cleaned by decodeSave).
+  const loadSaveCode = (code: string) => {
+    if (growing) return { loaded: false, message: 'Finish or stop your current planting before loading a save.' }
+    const loaded = decodeSave(code, Date.now())
+    if (!loaded) return { loaded: false, message: "That doesn't look like a garden save code." }
+    garden = loaded.garden
+    book = loaded.book
+    weatherOverride = loaded.weatherOverride
+    pendingBloom = loaded.pendingBloom
+    place = loaded.place
+    forecastCache = loaded.forecastCache
+    refreshFailed = false
+    save()
+    showCurrentScreen('Save loaded. Welcome back to your garden.')
+    return { loaded: true, message: 'Save loaded.' }
+  }
+
+  const showCurrentScreen = (note = '') => {
+    if (pendingBloom) goCelebrating(pendingBloom)
+    else goIdle(note)
+  }
+
   elements.bookButton.addEventListener('click', () =>
-    openBook(book, { zip: place?.zip ?? '', weatherStatus: weatherStatus(), onSaveZip: saveZip, onClearZip: clearZip }),
+    openBook(book, {
+      zip: place?.zip ?? '',
+      weatherStatus: weatherStatus(),
+      onSaveZip: saveZip,
+      onClearZip: clearZip,
+      saveCode: encodeSave({ garden, book, weatherOverride, pendingBloom, place, forecastCache, lastSeen: Date.now() }),
+      onLoadSaveCode: loadSaveCode,
+    }),
   )
 
-  if (pendingBloom) goCelebrating(pendingBloom)
-  else goIdle()
+  showCurrentScreen()
 }

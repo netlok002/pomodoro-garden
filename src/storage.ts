@@ -3,6 +3,7 @@ import { recordPick, type Book } from './book.ts'
 import { localDateKey } from './dates.ts'
 import type { WeatherOverride } from './weather.ts'
 import type { CachedForecast, Place } from './realWeather.ts'
+import { cleanBook, cleanForecastCache, cleanOverride, cleanPendingBloom, cleanPlace, cleanPlant } from './cleanSave.ts'
 
 const STORAGE_KEY = 'pomodoro-garden'
 
@@ -16,28 +17,19 @@ export interface StoredState {
   lastSeen: number
 }
 
-// Older saves predate weather, so their plants lack the perfect flag or weather tally.
-function withDefaults(plant: Plant): Plant {
-  if (plant.kind === 'flower') return { ...plant, perfect: plant.perfect ?? false }
-  return { ...plant, weatherSeconds: plant.weatherSeconds ?? {} }
-}
-
 // Lays a saved row into the fixed slots. A row that fits keeps its exact positions;
 // a longer row (from when the garden was bigger) is replanted middle-out, and flowers that
 // no longer fit are pressed into the book so nothing the player grew is lost.
-function toSlots(saved: (Plant | null)[], book: Book, today: string): { garden: Garden; book: Book } {
-  if (saved.length <= GARDEN_CAPACITY) {
-    const garden = emptyGarden().map((_, index) => {
-      const plant = saved[index]
-      return plant ? withDefaults(plant) : null
-    })
-    return { garden, book }
+function toSlots(saved: unknown[], book: Book, today: string): { garden: Garden; book: Book } {
+  const plants = saved.map(cleanPlant)
+  if (plants.length <= GARDEN_CAPACITY) {
+    return { garden: emptyGarden().map((_, index) => plants[index] ?? null), book }
   }
 
-  const plants = saved.filter((plant): plant is Plant => plant !== null).map(withDefaults)
+  const growing = plants.filter((plant): plant is Plant => plant !== null)
   const garden = emptyGarden()
-  plants.slice(0, GARDEN_CAPACITY).forEach((plant, i) => (garden[PLANTING_ORDER[i]] = plant))
-  const overflowBook = plants
+  growing.slice(0, GARDEN_CAPACITY).forEach((plant, i) => (garden[PLANTING_ORDER[i]] = plant))
+  const overflowBook = growing
     .slice(GARDEN_CAPACITY)
     .reduce(
       (updated, plant) =>
@@ -50,21 +42,28 @@ function toSlots(saved: (Plant | null)[], book: Book, today: string): { garden: 
 }
 
 export function parseState(raw: string | null, now: number): StoredState {
-  const fresh: StoredState = { garden: emptyGarden(), book: {}, weatherOverride: null, pendingBloom: null, place: null, forecastCache: null, lastSeen: now }
+  const fresh: StoredState = {
+    garden: emptyGarden(),
+    book: {},
+    weatherOverride: null,
+    pendingBloom: null,
+    place: null,
+    forecastCache: null,
+    lastSeen: now,
+  }
   if (!raw) return fresh
   try {
     const parsed = JSON.parse(raw)
-    if (!Array.isArray(parsed.garden)) return fresh
-    const savedBook: Book = typeof parsed.book === 'object' && parsed.book !== null ? parsed.book : {}
-    const { garden, book } = toSlots(parsed.garden, savedBook, localDateKey(new Date(now)))
+    if (!Array.isArray(parsed?.garden)) return fresh
+    const { garden, book } = toSlots(parsed.garden, cleanBook(parsed.book), localDateKey(new Date(now)))
     return {
       garden,
       book,
-      weatherOverride: parsed.weatherOverride ?? null,
-      pendingBloom: parsed.pendingBloom ?? null,
-      place: parsed.place ?? null,
-      forecastCache: parsed.forecastCache ?? null,
-      lastSeen: parsed.lastSeen ?? now,
+      weatherOverride: cleanOverride(parsed.weatherOverride),
+      pendingBloom: cleanPendingBloom(parsed.pendingBloom),
+      place: cleanPlace(parsed.place),
+      forecastCache: cleanForecastCache(parsed.forecastCache),
+      lastSeen: Number.isFinite(parsed.lastSeen) ? parsed.lastSeen : now,
     }
   } catch {
     return fresh
@@ -77,4 +76,13 @@ export function saveState(state: StoredState) {
 
 export function loadState(): StoredState {
   return parseState(localStorage.getItem(STORAGE_KEY), Date.now())
+}
+
+// Asks the browser not to clear our saved garden when it tidies up storage. Some browsers
+// grant this silently, some ask the player, some ignore it; it's a best-effort extra layer.
+let persistenceRequested = false
+export function requestPersistentStorage() {
+  if (persistenceRequested) return
+  persistenceRequested = true
+  navigator.storage?.persist?.().catch(() => {})
 }
