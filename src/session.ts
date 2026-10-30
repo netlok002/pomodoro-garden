@@ -1,26 +1,16 @@
+// The game's screens: idle (choose a seed, tend the garden) → growing (the timer runs)
+// → celebrating (the bloom waits to be planted or picked). The saved game lives in
+// gameState and the weather in weatherController; this file only drives the screens.
 import { startTimer, formatTime } from './timer.ts'
-import { nextEmptySlot, isFull, placePlant, removePlant, type Garden, type PendingBloom } from './garden.ts'
-import { recordPick, type Book } from './book.ts'
+import { nextEmptySlot, isFull, placePlant, removePlant, type PendingBloom } from './garden.ts'
+import { recordPick } from './book.ts'
 import { localDateKey } from './dates.ts'
 import { SPECIES, getSpecies } from './species.ts'
-import {
-  addWeatherTime,
-  forecast,
-  isPerfect,
-  type WeatherOverride,
-  type WeatherTally,
-} from './weather.ts'
-import { loadState, requestPersistentStorage, saveState } from './storage.ts'
+import { addWeatherTime, isPerfect, type WeatherTally } from './weather.ts'
+import { requestPersistentStorage } from './storage.ts'
 import { decodeSave, encodeSave } from './saveCode.ts'
-import {
-  ZipNotFoundError,
-  fetchRealForecast,
-  isFresh,
-  isValidZip,
-  lookupZip,
-  type CachedForecast,
-  type Place,
-} from './realWeather.ts'
+import { createGameState } from './gameState.ts'
+import { createWeatherController } from './weatherController.ts'
 import { playTimerDone, playTimerStart } from './sfx.ts'
 import { openSeedPicker } from './seedPicker.ts'
 import { openWeatherPicker } from './weatherPicker.ts'
@@ -54,102 +44,29 @@ export interface SessionHooks {
 }
 
 export function initSession(elements: SessionElements, hooks: SessionHooks = {}) {
-  const saved = loadState()
-  let garden: Garden = saved.garden
-  let book: Book = saved.book
-  let weatherOverride: WeatherOverride | null = saved.weatherOverride
-  let pendingBloom: PendingBloom | null = saved.pendingBloom
-  let place: Place | null = saved.place
-  let forecastCache: CachedForecast | null = saved.forecastCache
+  const game = createGameState()
+  const weather = createWeatherController(game, { onChange: () => renderWeather() })
   let selectedSpeciesId = SPECIES[0].id
   let growing = false
 
-  const save = () =>
-    saveState({ garden, book, weatherOverride, pendingBloom, place, forecastCache, lastSeen: Date.now() })
-
-  const updateGarden = (next: Garden) => {
-    garden = next
-    save()
-  }
-
   const todayKey = () => localDateKey(new Date())
 
-  // Real weather: used only while today's cached forecast matches the saved zip.
-  let refreshing = false
-  let refreshFailed = false
-  const realForecast = () => (place && isFresh(forecastCache, todayKey(), place.zip) ? forecastCache!.forecast : null)
-  const currentForecast = () => forecast(new Date(), weatherOverride, realForecast())
-  const weatherNow = () => currentForecast().today
-
-  const refreshForecast = async () => {
-    if (!place || refreshing || realForecast()) return
-    refreshing = true
-    try {
-      forecastCache = { date: todayKey(), zip: place.zip, forecast: await fetchRealForecast(place) }
-      refreshFailed = false
-      save()
-      renderWeather()
-    } catch {
-      refreshFailed = true
-    } finally {
-      refreshing = false
-    }
-  }
-
-  const weatherStatus = () => {
-    if (!place) return 'No zip code set, so the weather is simulated.'
-    const where = `${place.name}, ${place.state}`
-    if (realForecast()) return `Growing under the real forecast for ${where}.`
-    if (refreshFailed) return `Couldn't reach the weather service for ${where}, so the weather is simulated for now.`
-    return `Fetching the forecast for ${where}…`
-  }
-
-  const saveZip = async (zip: string) => {
-    if (!isValidZip(zip)) return 'Please enter a 5-digit US zip code.'
-    try {
-      place = await lookupZip(zip)
-    } catch (error) {
-      return error instanceof ZipNotFoundError
-        ? `Couldn't find zip code ${zip.trim()}.`
-        : "Couldn't reach the zip code lookup. Check your connection and try again."
-    }
-    forecastCache = null
-    save()
-    await refreshForecast()
-    renderWeather()
-    return weatherStatus()
-  }
-
-  const clearZip = () => {
-    place = null
-    forecastCache = null
-    refreshFailed = false
-    save()
-    renderWeather()
-    return weatherStatus()
-  }
-
   const renderWeather = () => {
-    const overriddenToday = weatherOverride?.date === todayKey()
-    renderForecast(elements.forecast, currentForecast(), () => {
-      openWeatherPicker(overriddenToday ? weatherOverride!.weather : null, (choice) => {
-        weatherOverride = choice ? { date: todayKey(), weather: choice } : null
-        save()
-        renderWeather()
-      })
+    renderForecast(elements.forecast, weather.forecast(), () => {
+      openWeatherPicker(weather.overrideToday(), weather.setOverride)
     })
   }
 
   const pressIntoBook = (speciesId: string, perfect: boolean) => {
-    book = recordPick(book, speciesId, perfect ? 'perfect' : 'normal', todayKey())
+    game.update({ book: recordPick(game.current.book, speciesId, perfect ? 'perfect' : 'normal', todayKey()) })
     return `Pressed a ${perfect ? 'perfect ' : ''}${getSpecies(speciesId).name} into your book.`
   }
 
   const pickFlower = (slotIndex: number) => {
-    const flower = garden[slotIndex]
+    const flower = game.current.garden[slotIndex]
     if (flower?.kind !== 'flower') return
     const note = pressIntoBook(flower.speciesId, flower.perfect)
-    updateGarden(removePlant(garden, slotIndex))
+    game.update({ garden: removePlant(game.current.garden, slotIndex) })
     goIdle(note)
   }
 
@@ -168,7 +85,7 @@ export function initSession(elements: SessionElements, hooks: SessionHooks = {})
 
   // Hovering a sprout previews it in the middle: how far it has grown and the time it has left.
   const previewSprout = (slotIndex: number | null) => {
-    const sprout = slotIndex === null ? null : garden[slotIndex]
+    const sprout = slotIndex === null ? null : game.current.garden[slotIndex]
     if (sprout?.kind !== 'sprout') {
       renderIdleCenter()
       return
@@ -181,13 +98,13 @@ export function initSession(elements: SessionElements, hooks: SessionHooks = {})
 
   const goIdle = (note = '') => {
     renderWeather()
-    void refreshForecast()
+    void weather.refresh()
     renderIdleCenter()
-    renderGarden(elements.garden, garden, {
+    renderGarden(elements.garden, game.current.garden, {
       onSproutClick: (slotIndex) => {
-        const sprout = garden[slotIndex]
+        const sprout = game.current.garden[slotIndex]
         if (sprout?.kind !== 'sprout') return
-        goRunning({
+        goGrowing({
           speciesId: sprout.speciesId,
           startElapsedSeconds: sprout.elapsedSeconds,
           weatherSeconds: sprout.weatherSeconds,
@@ -199,17 +116,17 @@ export function initSession(elements: SessionElements, hooks: SessionHooks = {})
     })
     elements.note.textContent = note
 
-    if (isFull(garden)) {
+    if (isFull(game.current.garden)) {
       elements.controls.innerHTML = '<div class="select-option disabled">Your garden is full — click a flower to pick it</div>'
       return
     }
     elements.controls.innerHTML = '<div id="start-button" class="select-option selected">❯ Plant</div>'
     elements.controls.querySelector<HTMLDivElement>('#start-button')!.addEventListener('click', () => {
-      goRunning({ speciesId: selectedSpeciesId, startElapsedSeconds: 0, weatherSeconds: {} })
+      goGrowing({ speciesId: selectedSpeciesId, startElapsedSeconds: 0, weatherSeconds: {} })
     })
   }
 
-  const goRunning = (planting: Planting) => {
+  const goGrowing = (planting: Planting) => {
     const species = getSpecies(planting.speciesId)
     const remainingSeconds = species.durationMinutes * 60 - planting.startElapsedSeconds
 
@@ -219,8 +136,13 @@ export function initSession(elements: SessionElements, hooks: SessionHooks = {})
     const countWeatherUpTo = (elapsedSeconds: number) => {
       const newSeconds = elapsedSeconds - countedSeconds
       if (newSeconds <= 0) return
-      weatherSeconds = addWeatherTime(weatherSeconds, weatherNow(), newSeconds)
+      weatherSeconds = addWeatherTime(weatherSeconds, weather.now(), newSeconds)
       countedSeconds = elapsedSeconds
+    }
+
+    const stopGrowing = () => {
+      growing = false
+      hooks.onFocusEnd?.()
     }
 
     playTimerStart()
@@ -229,7 +151,7 @@ export function initSession(elements: SessionElements, hooks: SessionHooks = {})
     requestPersistentStorage()
     renderWeather()
     elements.note.textContent = ''
-    renderGarden(elements.garden, garden)
+    renderGarden(elements.garden, game.current.garden)
     renderGrowingPlant(elements.plant, species, planting.startElapsedSeconds)
     elements.controls.innerHTML = `
       <div class="select-option disabled">&nbsp; Growing...</div>
@@ -242,28 +164,33 @@ export function initSession(elements: SessionElements, hooks: SessionHooks = {})
     }
 
     const onDone = () => {
-      growing = false
-      hooks.onFocusEnd?.()
+      stopGrowing()
       playTimerDone()
       // The bloom waits (saved, so a reload can't lose it) until the player chooses.
       // A resumed sprout's slot is cleared and held for it.
+      const { garden } = game.current
       const slotIndex = planting.slotIndex ?? nextEmptySlot(garden)
-      if (planting.slotIndex !== undefined) garden = removePlant(garden, planting.slotIndex)
-      pendingBloom = { speciesId: species.id, perfect: isPerfect(weatherSeconds, species.perfectWeather), slotIndex }
-      save()
-      goCelebrating(pendingBloom)
+      const bloom: PendingBloom = {
+        speciesId: species.id,
+        perfect: isPerfect(weatherSeconds, species.perfectWeather),
+        slotIndex,
+      }
+      game.update({
+        garden: planting.slotIndex !== undefined ? removePlant(garden, planting.slotIndex) : garden,
+        pendingBloom: bloom,
+      })
+      goCelebrating(bloom)
     }
 
     const cancelTimer = startTimer(elements.display, remainingSeconds, onDone, onTick)
     elements.controls.querySelector<HTMLDivElement>('#cancel-button')!.addEventListener('click', () => {
       const ranSeconds = cancelTimer()
-      growing = false
-      hooks.onFocusEnd?.()
+      stopGrowing()
       countWeatherUpTo(ranSeconds)
       const grownSeconds = planting.startElapsedSeconds + ranSeconds
       if (grownSeconds > 0) {
         const sprout = { kind: 'sprout' as const, speciesId: species.id, elapsedSeconds: grownSeconds, weatherSeconds }
-        updateGarden(placePlant(garden, sprout, planting.slotIndex))
+        game.update({ garden: placePlant(game.current.garden, sprout, planting.slotIndex) })
       }
       goIdle()
     })
@@ -274,7 +201,7 @@ export function initSession(elements: SessionElements, hooks: SessionHooks = {})
     const species = getSpecies(bloom.speciesId)
     renderWeather()
     renderCelebration(elements.plant, species, bloom.perfect)
-    renderGarden(elements.garden, garden)
+    renderGarden(elements.garden, game.current.garden)
     elements.display.innerHTML = ''
     elements.note.textContent = ''
     elements.controls.innerHTML = `
@@ -282,15 +209,13 @@ export function initSession(elements: SessionElements, hooks: SessionHooks = {})
       <div id="pick-button" class="select-option">❯ Pick into book</div>
     `
     elements.controls.querySelector<HTMLDivElement>('#keep-button')!.addEventListener('click', () => {
-      garden = placePlant(garden, { kind: 'flower', speciesId: bloom.speciesId, perfect: bloom.perfect }, bloom.slotIndex)
-      pendingBloom = null
-      save()
+      const flower = { kind: 'flower' as const, speciesId: bloom.speciesId, perfect: bloom.perfect }
+      game.update({ garden: placePlant(game.current.garden, flower, bloom.slotIndex), pendingBloom: null })
       goIdle(`Planted a ${bloom.perfect ? 'perfect ' : ''}${species.name} in your garden.`)
     })
     elements.controls.querySelector<HTMLDivElement>('#pick-button')!.addEventListener('click', () => {
       const note = pressIntoBook(bloom.speciesId, bloom.perfect)
-      pendingBloom = null
-      save()
+      game.update({ pendingBloom: null })
       goIdle(note)
     })
   }
@@ -300,30 +225,25 @@ export function initSession(elements: SessionElements, hooks: SessionHooks = {})
     if (growing) return { loaded: false, message: 'Finish or stop your current planting before loading a save.' }
     const loaded = decodeSave(code, Date.now())
     if (!loaded) return { loaded: false, message: "That doesn't look like a garden save code." }
-    garden = loaded.garden
-    book = loaded.book
-    weatherOverride = loaded.weatherOverride
-    pendingBloom = loaded.pendingBloom
-    place = loaded.place
-    forecastCache = loaded.forecastCache
-    refreshFailed = false
-    save()
+    game.replace(loaded)
+    weather.resetProblems()
     showCurrentScreen('Save loaded. Welcome back to your garden.')
     return { loaded: true, message: 'Save loaded.' }
   }
 
   const showCurrentScreen = (note = '') => {
+    const { pendingBloom } = game.current
     if (pendingBloom) goCelebrating(pendingBloom)
     else goIdle(note)
   }
 
   elements.bookButton.addEventListener('click', () =>
-    openBook(book, {
-      zip: place?.zip ?? '',
-      weatherStatus: weatherStatus(),
-      onSaveZip: saveZip,
-      onClearZip: clearZip,
-      saveCode: encodeSave({ garden, book, weatherOverride, pendingBloom, place, forecastCache, lastSeen: Date.now() }),
+    openBook(game.current.book, {
+      zip: game.current.place?.zip ?? '',
+      weatherStatus: weather.status(),
+      onSaveZip: weather.saveZip,
+      onClearZip: weather.clearZip,
+      saveCode: encodeSave(game.current),
       onLoadSaveCode: loadSaveCode,
     }),
   )
