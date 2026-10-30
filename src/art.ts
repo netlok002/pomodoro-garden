@@ -126,3 +126,8 @@ export function bookArt(): string {
       'M31 9.5 L31 18 L33 16 L35 18 L35 9.5 M22 31 C21 28 23 26 24 25 C25 26 27 28 26 31 C25 32 23 32 22 31 M24 31 L24 35',
   )
 }
+
+// Just the patch of earth, for an empty garden slot.
+export function groundArt(): string {
+  return sketch(GROUND)
+}

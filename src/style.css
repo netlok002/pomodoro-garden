@@ -12,7 +12,6 @@
 
   /* Fine paper grain, drawn as SVG noise tinted toward the ink colour. */
   --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.36 0 0 0 0 0.3 0 0 0 0 0.22 0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
 
 body {
   margin: 0;
@@ -171,62 +170,6 @@ main {
   color: var(--ink-soft);
   z-index: 20;
   pointer-events: none;
-}
-
-.garden {
-  display: grid;
-  grid-template-columns: repeat(5, 3rem);
-  gap: 0.5rem;
-  justify-content: center;
-  margin-top: 2rem;
-}
-
-.garden-slot {
-  position: relative;
-  height: 3rem;
-  border: 1px solid var(--ink-soft);
-  border-radius: 3px;
-  background: rgba(255, 250, 232, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.3rem;
-  box-sizing: border-box;
-}
-
-.garden-slot.empty {
-  border-style: dashed;
-  background: transparent;
-  color: var(--ink-soft);
-  font-size: 1rem;
-}
-
-.garden-slot.sprout {
-  background: rgba(180, 194, 160, 0.3);
-}
-
-.garden-slot.sprout.clickable {
-  cursor: pointer;
-}
-
-.garden-slot.sprout.clickable:hover {
-  background: rgba(180, 194, 160, 0.6);
-}
-
-.garden-slot-minutes {
-  position: absolute;
-  bottom: 0;
-  right: 0.2rem;
-  font-size: 0.75rem;
-  color: var(--ink-soft);
-}
-
-.garden-slot.flower.clickable {
-  cursor: pointer;
-}
-
-.garden-slot.flower.clickable:hover {
-  background: rgba(217, 165, 168, 0.35);
 }
 
 .note {
@@ -464,4 +407,45 @@ main {
   .sparkle {
     opacity: 0.6;
   }
+}
+
+/* The garden: one row of plants on a shared strip of sketched ground, no boxes. */
+.garden {
+  display: flex;
+  justify-content: center;
+}
+
+.garden-slot {
+  --slot-size: min(4.2rem, 9vw);
+  position: relative;
+  width: var(--slot-size);
+  height: var(--slot-size);
+  border-radius: 50%;
+  transition: background 0.15s ease;
+}
+
+/* Overlap neighbours so each patch of ground meets the next. */
+.garden-slot + .garden-slot {
+  margin-left: calc(var(--slot-size) * -0.26);
+}
+
+.garden-slot.clickable {
+  cursor: pointer;
+}
+
+.garden-slot.flower.clickable:hover {
+  background: rgba(217, 165, 168, 0.28);
+}
+
+.garden-slot.sprout.clickable:hover {
+  background: rgba(180, 194, 160, 0.4);
+}
+
+.garden-slot-minutes {
+  position: absolute;
+  top: 0;
+  right: 0.1rem;
+  font-size: 0.7rem;
+  font-style: italic;
+  color: var(--ink-soft);
 }

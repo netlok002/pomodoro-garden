@@ -1,4 +1,4 @@
-import type { Garden, Plant } from './garden.ts'
+import { emptyGarden, type Garden, type Plant } from './garden.ts'
 import type { Book } from './book.ts'
 import type { WeatherOverride } from './weather.ts'
 
@@ -17,14 +17,22 @@ function withDefaults(plant: Plant): Plant {
   return { ...plant, weatherSeconds: plant.weatherSeconds ?? {} }
 }
 
+// Older saves stored a short list with no gaps; lay it into the fixed row of slots.
+function toSlots(saved: (Plant | null)[]): Garden {
+  return emptyGarden().map((_, index) => {
+    const plant = saved[index]
+    return plant ? withDefaults(plant) : null
+  })
+}
+
 export function parseState(raw: string | null, now: number): StoredState {
-  const fresh: StoredState = { garden: [], book: {}, weatherOverride: null, lastSeen: now }
+  const fresh: StoredState = { garden: emptyGarden(), book: {}, weatherOverride: null, lastSeen: now }
   if (!raw) return fresh
   try {
     const parsed = JSON.parse(raw)
     if (!Array.isArray(parsed.garden)) return fresh
     return {
-      garden: parsed.garden.map(withDefaults),
+      garden: toSlots(parsed.garden),
       book: typeof parsed.book === 'object' && parsed.book !== null ? parsed.book : {},
       weatherOverride: parsed.weatherOverride ?? null,
       lastSeen: parsed.lastSeen ?? now,

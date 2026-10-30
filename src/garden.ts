@@ -17,20 +17,29 @@ export interface Sprout {
 
 export type Plant = Flower | Sprout
 
-export type Garden = Plant[]
+// A fixed row of slots; null is an empty patch of ground. Plants never move once placed.
+export type Slot = Plant | null
+
+export type Garden = Slot[]
+
+export function emptyGarden(): Garden {
+  return Array<Slot>(GARDEN_CAPACITY).fill(null)
+}
+
+export function firstEmptySlot(garden: Garden): number {
+  return garden.indexOf(null)
+}
 
 export function isFull(garden: Garden): boolean {
-  return garden.length >= GARDEN_CAPACITY
+  return firstEmptySlot(garden) === -1
 }
 
 export function placePlant(garden: Garden, plant: Plant, slotIndex?: number): Garden {
-  if (slotIndex !== undefined) {
-    return garden.map((existing, index) => (index === slotIndex ? plant : existing))
-  }
-  if (isFull(garden)) throw new Error('Garden is full')
-  return [...garden, plant]
+  const target = slotIndex ?? firstEmptySlot(garden)
+  if (target === -1) throw new Error('Garden is full')
+  return garden.map((existing, index) => (index === target ? plant : existing))
 }
 
 export function removePlant(garden: Garden, slotIndex: number): Garden {
-  return garden.filter((_, index) => index !== slotIndex)
+  return garden.map((existing, index) => (index === slotIndex ? null : existing))
 }

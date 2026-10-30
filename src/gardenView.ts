@@ -1,7 +1,7 @@
 import { GARDEN_CAPACITY, type Garden } from './garden.ts'
 import { getSpecies } from './species.ts'
 import { plantArt } from './plantView.ts'
-import { speciesArt } from './art.ts'
+import { groundArt, speciesArt } from './art.ts'
 
 export interface GardenHandlers {
   onSproutClick: (slotIndex: number) => void
@@ -14,7 +14,7 @@ export function renderGarden(container: HTMLElement, garden: Garden, handlers?: 
 
   const slots = Array.from({ length: GARDEN_CAPACITY }, (_, index) => {
     const plant = garden[index]
-    if (!plant) return '<div class="garden-slot empty">·</div>'
+    if (!plant) return `<div class="garden-slot empty">${groundArt()}</div>`
 
     const species = getSpecies(plant.speciesId)
     if (plant.kind === 'flower') {

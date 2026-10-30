@@ -1,5 +1,5 @@
 import { startTimer, formatTime } from './timer.ts'
-import { isFull, placePlant, removePlant, type Garden } from './garden.ts'
+import { firstEmptySlot, isFull, placePlant, removePlant, type Garden } from './garden.ts'
 import { recordPick, type Book } from './book.ts'
 import { localDateKey } from './dates.ts'
 import { SPECIES, getSpecies } from './species.ts'
@@ -68,7 +68,7 @@ export function initSession(elements: SessionElements) {
 
   const pickFlower = (slotIndex: number) => {
     const flower = garden[slotIndex]
-    if (flower.kind !== 'flower') return
+    if (flower?.kind !== 'flower') return
     book = recordPick(book, flower.speciesId, flower.perfect ? 'perfect' : 'normal', todayKey())
     updateGarden(removePlant(garden, slotIndex))
     const name = getSpecies(flower.speciesId).name
@@ -82,7 +82,7 @@ export function initSession(elements: SessionElements) {
     renderGarden(elements.garden, garden, {
       onSproutClick: (slotIndex) => {
         const sprout = garden[slotIndex]
-        if (sprout.kind !== 'sprout') return
+        if (sprout?.kind !== 'sprout') return
         goRunning({
           speciesId: sprout.speciesId,
           startElapsedSeconds: sprout.elapsedSeconds,
@@ -145,8 +145,9 @@ export function initSession(elements: SessionElements) {
       playTimerDone()
       const perfect = isPerfect(weatherSeconds, species.perfectWeather)
       // Saved straight away, so closing the tab mid-celebration never loses the flower.
-      updateGarden(placePlant(garden, { kind: 'flower', speciesId: species.id, perfect }, planting.slotIndex))
-      goCelebrating(species.id, perfect, planting.slotIndex ?? garden.length - 1)
+      const slotIndex = planting.slotIndex ?? firstEmptySlot(garden)
+      updateGarden(placePlant(garden, { kind: 'flower', speciesId: species.id, perfect }, slotIndex))
+      goCelebrating(species.id, perfect, slotIndex)
     }
 
     const cancelTimer = startTimer(elements.display, remainingSeconds, onDone, onTick)
