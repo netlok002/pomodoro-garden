@@ -6,7 +6,8 @@ import { createSpotify } from './spotify.ts'
 import { openRadio } from './radioView.ts'
 import { SKETCH_FILTERS, bookArt, flowerboxArt, noteArt, radioArt } from './art.ts'
 
-initDevSpeed()
+// Speed-up shortcuts (Ctrl+Shift+1–4) only exist when running locally, not on the live site.
+if (import.meta.env.DEV) initDevSpeed()
 initClickSounds()
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
