@@ -4,7 +4,7 @@ import { initDevSpeed } from './devSpeed.ts'
 import { initClickSounds } from './clickSounds.ts'
 import { createSpotify } from './spotify.ts'
 import { openRadio } from './radioView.ts'
-import { SKETCH_FILTERS, bookArt, flowerboxArt, radioArt } from './art.ts'
+import { SKETCH_FILTERS, bookArt, flowerboxArt, noteArt, radioArt } from './art.ts'
 
 initDevSpeed()
 initClickSounds()
@@ -22,6 +22,11 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <div class="flowerbox">${flowerboxArt()}</div>
       <button id="radio-button" class="radio-button" aria-label="Radio" aria-describedby="radio-bubble">${radioArt()}</button>
       <div id="radio-bubble" class="radio-bubble" role="status" hidden><span class="radio-bubble-text"></span></div>
+      <div id="radio-notes" class="radio-notes" aria-hidden="true" hidden>
+        <span class="radio-note note-1">${noteArt('single')}</span>
+        <span class="radio-note note-2">${noteArt('pair')}</span>
+        <span class="radio-note note-3">${noteArt('single')}</span>
+      </div>
     </div>
     <p id="note" class="note"></p>
   </main>
@@ -42,8 +47,8 @@ initSession(
     bookButton: element('book-button'),
   },
   {
-    onFocusStart: () => void spotify.focusStart(),
-    onFocusEnd: () => void spotify.focusEnd(),
+    onFocusStart: () => void spotify.focusStart().then(checkPlayingSoon),
+    onFocusEnd: () => void spotify.focusEnd().then(checkPlayingSoon),
   },
 )
 
@@ -75,3 +80,20 @@ radio.addEventListener('blur', hideNowPlaying)
 void spotify.finishLogin().then((returnedFromSpotify) => {
   if (returnedFromSpotify) openRadio(spotify)
 })
+
+// Music notes float above the radio while Spotify is playing. Spotify can't tell us when
+// playback changes, so we ask: every 15 seconds while the tab is visible, when the
+// player comes back to the tab, and shortly after each session starts or ends.
+const notes = element('radio-notes')
+spotify.onPlayingChange((playing) => (notes.hidden = !playing))
+
+const PLAYING_CHECK_MS = 15_000
+const checkPlaying = () => {
+  if (document.visibilityState === 'visible') void spotify.checkPlaying()
+}
+function checkPlayingSoon() {
+  setTimeout(checkPlaying, 2_000)
+}
+setInterval(checkPlaying, PLAYING_CHECK_MS)
+document.addEventListener('visibilitychange', checkPlaying)
+checkPlaying()

@@ -158,3 +158,17 @@ export function radioArt(): string {
       'M30.5 31.5 m-2.2 0 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 M35.5 31.5 m-2.2 0 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0',
   )
 }
+
+// Little music notes that float above the radio while music plays.
+const NOTES = {
+  // An eighth note: filled-looking oval head (drawn as a loop), stem and a curled flag.
+  single: 'M17 34 m-5 0 a5 3.6 -20 1 0 10 0 a5 3.6 -20 1 0 -10 0 M21.5 32.5 L21.5 10 C25 12 30 14 29 21',
+  // Two beamed notes.
+  pair:
+    'M13 36 m-4.5 0 a4.5 3.2 -20 1 0 9 0 a4.5 3.2 -20 1 0 -9 0 M33 32 m-4.5 0 a4.5 3.2 -20 1 0 9 0 a4.5 3.2 -20 1 0 -9 0 ' +
+    'M17 35 L17 13 M37 31 L37 9 M17 13 L37 9 M17 17 L37 13',
+}
+
+export function noteArt(kind: keyof typeof NOTES): string {
+  return sketch(NOTES[kind])
+}

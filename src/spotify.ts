@@ -44,6 +44,9 @@ export interface Spotify {
   focusEnd: () => Promise<void>
   // A short line about the current song, for the radio's speech bubble.
   nowPlaying: () => Promise<string>
+  // Asks Spotify whether music is playing; listeners hear about changes.
+  checkPlaying: () => Promise<void>
+  onPlayingChange: (listener: (playing: boolean) => void) => void
 }
 
 // How long a "now playing" answer is reused, so hovering doesn't hammer Spotify.
@@ -78,11 +81,20 @@ export function createSpotify(): Spotify {
 
   let nowPlayingCache = { text: '', at: 0 }
 
+  let playing = false
+  const playingListeners: ((playing: boolean) => void)[] = []
+  const setPlaying = (value: boolean) => {
+    if (value === playing) return
+    playing = value
+    playingListeners.forEach((listener) => listener(playing))
+  }
+
   const describeNowPlaying = async (): Promise<string> => {
     if (SPOTIFY_CLIENT_ID === '') return "Spotify isn't set up yet."
     if (!state.tokens) return 'Connect Spotify on the radio to play music while you grow.'
     try {
       const playback = await getPlayback(await token())
+      setPlaying(playback?.isPlaying === true)
       if (!playback?.isPlaying || !playback.track) return 'Nothing playing right now.'
       const { name, artists } = playback.track
       return artists ? `${name} — ${artists}` : name
@@ -93,6 +105,21 @@ export function createSpotify(): Spotify {
   }
 
   return {
+    // A background check: failures are ignored rather than shown on the radio.
+    checkPlaying: async () => {
+      if (!state.tokens) return setPlaying(false)
+      try {
+        const playback = await getPlayback(await token())
+        setPlaying(playback?.isPlaying === true)
+      } catch {
+        // Leave the notes as they are; the next check will try again.
+      }
+    },
+
+    onPlayingChange: (listener) => {
+      playingListeners.push(listener)
+    },
+
     nowPlaying: async () => {
       if (Date.now() - nowPlayingCache.at < NOW_PLAYING_CACHE_MS) return nowPlayingCache.text
       nowPlayingCache = { text: await describeNowPlaying(), at: Date.now() }
@@ -147,6 +174,7 @@ export function createSpotify(): Spotify {
     disconnect: () => {
       update({ tokens: null, playlist: null, rememberedVolume: null })
       lastProblem = ''
+      setPlaying(false)
     },
 
     listPlaylists: async () => {

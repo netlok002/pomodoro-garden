@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { bookArt, flowerboxArt, radioArt, sparkleArt, speciesArt, stageArt, weatherArt } from './art.ts'
+import { bookArt, flowerboxArt, noteArt, radioArt, sparkleArt, speciesArt, stageArt, weatherArt } from './art.ts'
 import { WEATHERS } from './weather.ts'
 import { SPECIES } from './species.ts'
 
@@ -62,5 +62,12 @@ describe('flowerboxArt', () => {
 describe('radioArt', () => {
   it('is a drawing', () => {
     expect(radioArt()).toContain('<svg')
+  })
+})
+
+describe('noteArt', () => {
+  it('has a drawing for each kind of note', () => {
+    expect(noteArt('single')).toContain('<svg')
+    expect(noteArt('pair')).toContain('<svg')
   })
 })
