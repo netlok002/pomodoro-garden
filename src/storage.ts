@@ -1,4 +1,4 @@
-import { GARDEN_CAPACITY, emptyGarden, type Garden, type Plant } from './garden.ts'
+import { GARDEN_CAPACITY, PLANTING_ORDER, emptyGarden, type Garden, type Plant } from './garden.ts'
 import { recordPick, type Book } from './book.ts'
 import { localDateKey } from './dates.ts'
 import type { WeatherOverride } from './weather.ts'
@@ -19,7 +19,7 @@ function withDefaults(plant: Plant): Plant {
 }
 
 // Lays a saved row into the fixed slots. A row that fits keeps its exact positions;
-// a longer row (from when the garden was bigger) is packed left, and flowers that
+// a longer row (from when the garden was bigger) is replanted middle-out, and flowers that
 // no longer fit are pressed into the book so nothing the player grew is lost.
 function toSlots(saved: (Plant | null)[], book: Book, today: string): { garden: Garden; book: Book } {
   if (saved.length <= GARDEN_CAPACITY) {
@@ -31,7 +31,8 @@ function toSlots(saved: (Plant | null)[], book: Book, today: string): { garden: 
   }
 
   const plants = saved.filter((plant): plant is Plant => plant !== null).map(withDefaults)
-  const garden = emptyGarden().map((_, index) => plants[index] ?? null)
+  const garden = emptyGarden()
+  plants.slice(0, GARDEN_CAPACITY).forEach((plant, i) => (garden[PLANTING_ORDER[i]] = plant))
   const overflowBook = plants
     .slice(GARDEN_CAPACITY)
     .reduce(

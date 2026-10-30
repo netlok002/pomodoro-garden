@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest'
 import {
   GARDEN_CAPACITY,
   emptyGarden,
-  firstEmptySlot,
+  PLANTING_ORDER,
+  nextEmptySlot,
   isFull,
   placePlant,
   removePlant,
@@ -35,26 +36,49 @@ describe('isFull', () => {
   })
 })
 
-describe('firstEmptySlot', () => {
-  it('finds the leftmost empty slot, even between plants', () => {
-    const garden = gardenOf(4)
-    garden[1] = null
-    expect(firstEmptySlot(garden)).toBe(1)
+describe('PLANTING_ORDER', () => {
+  it('starts in the middle and works outward, left before right', () => {
+    expect(PLANTING_ORDER).toEqual([2, 1, 3, 0, 4])
+  })
+})
+
+describe('nextEmptySlot', () => {
+  it('fills the middle of an empty garden first', () => {
+    expect(nextEmptySlot(emptyGarden())).toBe(2)
+  })
+
+  it('fills outward from the middle as the garden grows', () => {
+    let garden = emptyGarden()
+    const filled: number[] = []
+    for (let i = 0; i < GARDEN_CAPACITY; i++) {
+      const slot = nextEmptySlot(garden)
+      filled.push(slot)
+      garden = placePlant(garden, flower, slot)
+    }
+    expect(filled).toEqual([2, 1, 3, 0, 4])
+  })
+
+  it('refills a picked gap in planting order', () => {
+    const garden = gardenOf(5)
+    garden[0] = null
+    garden[3] = null
+    expect(nextEmptySlot(garden)).toBe(3)
   })
 
   it('gives -1 when the garden is full', () => {
-    expect(firstEmptySlot(gardenOf(5))).toBe(-1)
+    expect(nextEmptySlot(gardenOf(5))).toBe(-1)
   })
 })
 
 describe('placePlant', () => {
-  it('puts a new plant in the first empty slot', () => {
-    const garden = gardenOf(3)
+  it('puts a new plant in the next empty slot', () => {
+    const garden = gardenOf(5)
     garden[1] = null
+    garden[4] = null
     const result = placePlant(garden, sprout)
     expect(result[1]).toEqual(sprout)
+    expect(result[4]).toBeNull()
     expect(result[0]).toEqual(flower)
-    expect(result[2]).toEqual(flower)
   })
 
   it('replaces the plant in a given slot, leaving the others in place', () => {

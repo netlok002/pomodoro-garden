@@ -1,5 +1,5 @@
 import { startTimer, formatTime } from './timer.ts'
-import { firstEmptySlot, isFull, placePlant, removePlant, type Garden } from './garden.ts'
+import { nextEmptySlot, isFull, placePlant, removePlant, type Garden } from './garden.ts'
 import { recordPick, type Book } from './book.ts'
 import { localDateKey } from './dates.ts'
 import { SPECIES, getSpecies } from './species.ts'
@@ -145,7 +145,7 @@ export function initSession(elements: SessionElements) {
       playTimerDone()
       const perfect = isPerfect(weatherSeconds, species.perfectWeather)
       // Saved straight away, so closing the tab mid-celebration never loses the flower.
-      const slotIndex = planting.slotIndex ?? firstEmptySlot(garden)
+      const slotIndex = planting.slotIndex ?? nextEmptySlot(garden)
       updateGarden(placePlant(garden, { kind: 'flower', speciesId: species.id, perfect }, slotIndex))
       goCelebrating(species.id, perfect, slotIndex)
     }

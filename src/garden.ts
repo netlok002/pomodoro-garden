@@ -26,16 +26,27 @@ export function emptyGarden(): Garden {
   return Array<Slot>(GARDEN_CAPACITY).fill(null)
 }
 
-export function firstEmptySlot(garden: Garden): number {
-  return garden.indexOf(null)
+// New plants start in the middle of the box and work outward, left before right.
+export const PLANTING_ORDER: number[] = (() => {
+  const middle = Math.floor((GARDEN_CAPACITY - 1) / 2)
+  const order = [middle]
+  for (let step = 1; order.length < GARDEN_CAPACITY; step++) {
+    if (middle - step >= 0) order.push(middle - step)
+    if (middle + step < GARDEN_CAPACITY) order.push(middle + step)
+  }
+  return order
+})()
+
+export function nextEmptySlot(garden: Garden): number {
+  return PLANTING_ORDER.find((slot) => garden[slot] === null) ?? -1
 }
 
 export function isFull(garden: Garden): boolean {
-  return firstEmptySlot(garden) === -1
+  return nextEmptySlot(garden) === -1
 }
 
 export function placePlant(garden: Garden, plant: Plant, slotIndex?: number): Garden {
-  const target = slotIndex ?? firstEmptySlot(garden)
+  const target = slotIndex ?? nextEmptySlot(garden)
   if (target === -1) throw new Error('Garden is full')
   return garden.map((existing, index) => (index === target ? plant : existing))
 }

@@ -413,15 +413,19 @@ main {
 /* The garden: five plants growing from one sketched wooden flowerbox. */
 .garden-wrap {
   --slot: min(5.6rem, 15vw);
-  --slot-gap: 0.6rem;
-  --box-padding: 1.6rem;
-  --box-width: calc(var(--slot) * 5 + var(--slot-gap) * 4 + var(--box-padding) * 2);
+  /* Drawings fill only the middle of their slot, so neighbours can overlap without touching. */
+  --slot-overlap: calc(var(--slot) * 0.18);
+  --box-padding: 0.4rem;
+  --box-width: calc(var(--slot) * 5 - var(--slot-overlap) * 4 + var(--box-padding) * 2);
 }
 
 .garden {
   display: flex;
-  gap: var(--slot-gap);
   padding: 0 var(--box-padding);
+}
+
+.garden-slot + .garden-slot {
+  margin-left: calc(-1 * var(--slot-overlap));
 }
 
 .garden-slot {
