@@ -1,4 +1,4 @@
-import './style.css'
+import './styles/index.css'
 import { initSession } from './session.ts'
 import { initDevSpeed } from './devSpeed.ts'
 import { initClickSounds } from './clickSounds.ts'

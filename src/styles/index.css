@@ -1,0 +1,8 @@
+/* The garden's styles, one file per area of the page. */
+@import './base.css';
+@import './modal.css';
+@import './plant.css';
+@import './forecast.css';
+@import './garden.css';
+@import './pages.css';
+@import './radio.css';

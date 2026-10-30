@@ -1,0 +1,102 @@
+#timer-display {
+  font-size: 2.2rem;
+  letter-spacing: 0.04em;
+  margin: 1rem 0;
+}
+
+.timer-value {
+  cursor: pointer;
+  border-bottom: 1px dashed var(--ink-soft);
+}
+
+.plant-art {
+  width: 6rem;
+  height: 6rem;
+  margin: 0 auto;
+}
+
+#plant p {
+  margin: 0.25rem 0 0;
+  font-style: italic;
+}
+
+#controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 1.1rem;
+}
+
+.select-option {
+  padding: 0.15rem 0.75rem;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+/* The main action (Plant, Plant in garden): a deeper rose so it reads as clickable. */
+.select-option.selected {
+  background: var(--rose-deep);
+  color: var(--button-text);
+  box-shadow: 0 1px 3px rgba(91, 78, 63, 0.25);
+  transition: background 0.15s ease;
+}
+
+.select-option.selected:hover {
+  background: #93505a;
+}
+
+.select-option.disabled {
+  cursor: default;
+  color: var(--ink-soft);
+}
+
+/* Celebration: the bloom sways in the wind while ink sparkles twinkle around it. */
+.celebration {
+  position: relative;
+  width: 11rem;
+  height: 10rem;
+  margin: 0 auto;
+}
+
+.celebration-art {
+  width: 9rem;
+  height: 9rem;
+  transform-origin: 50% 92%;
+  animation: sway 3.2s ease-in-out infinite;
+}
+
+.sparkle {
+  position: absolute;
+  width: 1.1rem;
+  height: 1.1rem;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  animation: twinkle 2.8s ease-in-out infinite;
+}
+
+@keyframes sway {
+  0%, 100% { transform: rotate(-2.5deg); }
+  50% { transform: rotate(2.5deg); }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+  50% { opacity: 0.85; transform: translate(-50%, -50%) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .celebration-art,
+  .sparkle {
+    animation: none;
+  }
+
+  .sparkle {
+    opacity: 0.6;
+  }
+}
+
+/* A sprout's time left while previewing it: shown, but not clickable like the real timer. */
+.timer-preview {
+  color: var(--ink-soft);
+}

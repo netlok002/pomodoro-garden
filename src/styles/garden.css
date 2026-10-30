@@ -1,0 +1,98 @@
+/* The planter and its radio sit together; the radio stands just right of the planter. */
+.garden-wrap {
+  position: relative;
+  width: fit-content;
+  margin: 2rem auto 0;
+}
+
+/* The book sits at the top-left, lined up with the planter's left edge. */
+.book-button {
+  position: absolute;
+  /* Above the forecast arc, whose box spans the same corner. */
+  z-index: 2;
+  top: 0;
+  left: calc(50% - var(--box-width) / 2);
+  width: 3rem;
+  height: 3rem;
+  padding: 0.2rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+/* The old radio sits on the ground just right of the planter. */
+.radio-button {
+  position: absolute;
+  left: calc(100% + 0.6rem);
+  bottom: 0;
+  width: 3.6rem;
+  height: 3.6rem;
+  padding: 0.2rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.book-button:hover,
+.radio-button:hover {
+  transform: rotate(-4deg) scale(1.06);
+}
+
+/* The garden: five plants growing from one sketched wooden flowerbox. */
+/* Garden sizes live on main so the book and radio can line up with the planter. */
+main {
+  --slot: min(5.6rem, 15vw);
+  /* Drawings fill only the middle of their slot, so neighbours can overlap without touching. */
+  --slot-overlap: calc(var(--slot) * 0.18);
+  --box-padding: 0.4rem;
+  --box-width: calc(var(--slot) * 5 - var(--slot-overlap) * 4 + var(--box-padding) * 2);
+}
+
+.garden {
+  display: flex;
+  padding: 0 var(--box-padding);
+}
+
+.garden-slot + .garden-slot {
+  margin-left: calc(-1 * var(--slot-overlap));
+}
+
+.garden-slot {
+  position: relative;
+  width: var(--slot);
+  height: var(--slot);
+  border-radius: 50%;
+  transition: background 0.15s ease;
+}
+
+.garden-slot.clickable {
+  cursor: pointer;
+}
+
+.garden-slot.flower.clickable:hover {
+  background: rgba(217, 165, 168, 0.28);
+}
+
+.garden-slot.sprout.clickable:hover {
+  background: rgba(180, 194, 160, 0.4);
+}
+
+.garden-slot-minutes {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  font-style: italic;
+  color: var(--ink-soft);
+}
+
+/* The box is 5:1. Pull it up so the soil line (1/8 down the box) meets the
+   stem bases (which sit 1/12 above the bottom of each plant drawing). */
+.flowerbox {
+  width: var(--box-width);
+  aspect-ratio: 320 / 64;
+  margin-top: calc(-1 * (var(--slot) / 12 + var(--box-width) / 5 / 8));
+}
