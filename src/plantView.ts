@@ -1,11 +1,11 @@
 import { bloomStageFor, growthStage, stageName } from './growth.ts'
-import { sparkleArt, speciesArt, stageArt } from './art.ts'
+import { sparkleArt, speciesArt, stageArt, type PlantArtOptions } from './art.ts'
 import type { Species } from './species.ts'
 
-export function plantArt(species: Species, elapsedSeconds: number): string {
+export function plantArt(species: Species, elapsedSeconds: number, options: PlantArtOptions = {}): string {
   const durationSeconds = species.durationMinutes * 60
   const name = stageName(growthStage(elapsedSeconds, durationSeconds), bloomStageFor(durationSeconds))
-  return name === 'bloom' ? speciesArt(species.id) : stageArt(name)
+  return name === 'bloom' ? speciesArt(species.id, options) : stageArt(name, options)
 }
 
 export function renderGrowingPlant(container: HTMLElement, species: Species, elapsedSeconds: number) {

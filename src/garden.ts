@@ -1,6 +1,6 @@
 import type { WeatherTally } from './weather.ts'
 
-export const GARDEN_CAPACITY = 10
+export const GARDEN_CAPACITY = 5
 
 export interface Flower {
   kind: 'flower'

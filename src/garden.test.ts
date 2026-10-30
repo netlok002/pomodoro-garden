@@ -17,9 +17,9 @@ const gardenOf = (count: number): Garden =>
   emptyGarden().map((slot, index) => (index < count ? flower : slot))
 
 describe('emptyGarden', () => {
-  it('has 10 empty slots', () => {
-    expect(GARDEN_CAPACITY).toBe(10)
-    expect(emptyGarden()).toEqual(Array(10).fill(null))
+  it('has 5 empty slots', () => {
+    expect(GARDEN_CAPACITY).toBe(5)
+    expect(emptyGarden()).toEqual(Array(5).fill(null))
   })
 })
 
@@ -29,8 +29,8 @@ describe('isFull', () => {
   })
 
   it('is full when every slot holds a plant, counting sprouts', () => {
-    const garden = gardenOf(9)
-    garden[9] = sprout
+    const garden = gardenOf(4)
+    garden[4] = sprout
     expect(isFull(garden)).toBe(true)
   })
 })
@@ -43,7 +43,7 @@ describe('firstEmptySlot', () => {
   })
 
   it('gives -1 when the garden is full', () => {
-    expect(firstEmptySlot(gardenOf(10))).toBe(-1)
+    expect(firstEmptySlot(gardenOf(5))).toBe(-1)
   })
 })
 
@@ -71,13 +71,13 @@ describe('placePlant', () => {
   })
 
   it('refuses a new plant when the garden is full', () => {
-    expect(() => placePlant(gardenOf(10), sprout)).toThrow()
+    expect(() => placePlant(gardenOf(5), sprout)).toThrow()
   })
 
   it('still lets a sprout in a full garden finish growing in its slot', () => {
-    const garden = gardenOf(10)
-    garden[9] = sprout
-    expect(placePlant(garden, flower, 9)[9]).toEqual(flower)
+    const garden = gardenOf(5)
+    garden[4] = sprout
+    expect(placePlant(garden, flower, 4)[4]).toEqual(flower)
   })
 })
 
@@ -92,6 +92,6 @@ describe('removePlant', () => {
   })
 
   it('frees space in a full garden', () => {
-    expect(isFull(removePlant(gardenOf(10), 0))).toBe(false)
+    expect(isFull(removePlant(gardenOf(5), 0))).toBe(false)
   })
 })

@@ -46,9 +46,9 @@ function rays(cx: number, cy: number, from: number, to: number, count: number, i
 }
 
 // Draws the paths twice with different wobble so the lines read as a sketch.
-function sketch(paths: string): string {
+function sketch(paths: string, viewBox = '0 0 48 48'): string {
   return `
-    <svg class="sketch" viewBox="0 0 48 48" aria-hidden="true">
+    <svg class="sketch" viewBox="${viewBox}" aria-hidden="true">
       <path d="${paths}" filter="url(#sketch-a)" />
       <path class="sketch-echo" d="${paths}" filter="url(#sketch-b)" />
     </svg>
@@ -56,39 +56,46 @@ function sketch(paths: string): string {
 }
 
 const STAGES: Record<GrowingStage, string> = {
-  seed: `${GROUND} M21 41 C21 38 27 38 27 41 C27 43 21 43 21 41 Z`,
-  sprout: `${GROUND} M24 44 C24 40 23 37 24 34 M24 37 C20 36 18 33 18 30 C21 31 23 33 24 37 M24 36 C28 35 30 32 30 29 C27 30 25 32 24 36`,
-  stem: `${GROUND} M24 44 C23 36 25 28 24 20 M24 33 C19 32 16 28 16 25 C20 26 23 29 24 33 M24 27 C29 26 32 22 32 19 C28 20 25 23 24 27`,
-  bud: `${GROUND} M24 44 C23 36 25 26 24 18 M24 33 C19 32 16 28 16 25 C20 26 23 29 24 33 M24 18 C19 14 21 8 24 5 C27 8 29 14 24 18 M24 18 C23 13 23 9 24 5`,
+  seed: `M21 41 C21 38 27 38 27 41 C27 43 21 43 21 41 Z`,
+  sprout: `M24 44 C24 40 23 37 24 34 M24 37 C20 36 18 33 18 30 C21 31 23 33 24 37 M24 36 C28 35 30 32 30 29 C27 30 25 32 24 36`,
+  stem: `M24 44 C23 36 25 28 24 20 M24 33 C19 32 16 28 16 25 C20 26 23 29 24 33 M24 27 C29 26 32 22 32 19 C28 20 25 23 24 27`,
+  bud: `M24 44 C23 36 25 26 24 18 M24 33 C19 32 16 28 16 25 C20 26 23 29 24 33 M24 18 C19 14 21 8 24 5 C27 8 29 14 24 18 M24 18 C23 13 23 9 24 5`,
 }
 
 const BLOOMS: Record<string, string> = {
   // Mushroom cap with glowing dashes around it.
-  glowcap: `${GROUND} M24 44 C22 38 26 32 24 26 M11 26 C12 14 36 14 37 26 C30 24 18 24 11 26 Z M19 20 a1.2 1.2 0 1 0 0.1 0 M28 19 a1.4 1.4 0 1 0 0.1 0 M24 23 a1 1 0 1 0 0.1 0 M8 17 L5 15 M40 17 L43 15 M24 11 L24 7`,
+  glowcap: `M24 44 C22 38 26 32 24 26 M11 26 C12 14 36 14 37 26 C30 24 18 24 11 26 Z M19 20 a1.2 1.2 0 1 0 0.1 0 M28 19 a1.4 1.4 0 1 0 0.1 0 M24 23 a1 1 0 1 0 0.1 0 M8 17 L5 15 M40 17 L43 15 M24 11 L24 7`,
   // Twitchy starburst on a crooked stem.
-  zipbloom: `${GROUND} M24 44 C27 36 21 30 24 22 M24 34 C28 33 30 31 31 28 ${burst(24, 15, 3.5, 10, 7)} M24 15 a1.5 1.5 0 1 0 0.1 0`,
+  zipbloom: `M24 44 C27 36 21 30 24 22 M24 34 C28 33 30 31 31 28 ${burst(24, 15, 3.5, 10, 7)} M24 15 a1.5 1.5 0 1 0 0.1 0`,
   // Fuzzy puff of overlapping circles.
-  murkmoss: `${GROUND} M24 44 C24 40 25 35 24 31 M24 22 m-7 0 a7 7 0 1 0 14 0 a7 7 0 1 0 -14 0 M18 26 m-5 0 a5 5 0 1 0 10 0 a5 5 0 1 0 -10 0 M30 26 m-5 0 a5 5 0 1 0 10 0 a5 5 0 1 0 -10 0 M24 15 m-5 0 a5 5 0 1 0 10 0 a5 5 0 1 0 -10 0 M14 13 l-2 -2 M34 13 l2 -2 M24 8 l0 -3`,
+  murkmoss: `M24 44 C24 40 25 35 24 31 M24 22 m-7 0 a7 7 0 1 0 14 0 a7 7 0 1 0 -14 0 M18 26 m-5 0 a5 5 0 1 0 10 0 a5 5 0 1 0 -10 0 M30 26 m-5 0 a5 5 0 1 0 10 0 a5 5 0 1 0 -10 0 M24 15 m-5 0 a5 5 0 1 0 10 0 a5 5 0 1 0 -10 0 M14 13 l-2 -2 M34 13 l2 -2 M24 8 l0 -3`,
   // Crystal petals with facet lines.
-  prismpetal: `${GROUND} M24 44 L24 25 M24 25 L18 14 L24 4 L30 14 Z M18 14 L30 14 M24 4 L24 25 M23 23 L14 19 L9 10 L19 13 Z M25 23 L34 19 L39 10 L29 13 Z`,
+  prismpetal: `M24 44 L24 25 M24 25 L18 14 L24 4 L30 14 Z M18 14 L30 14 M24 4 L24 25 M23 23 L14 19 L9 10 L19 13 Z M25 23 L34 19 L39 10 L29 13 Z`,
   // A cup that holds rain, with a drooping tongue and a drip.
-  driptongue: `${GROUND} M24 44 C20 38 27 32 24 25 M13 13 C13 27 35 27 35 13 M13 13 C18 10 30 10 35 13 C30 16 18 16 13 13 M29 22 C33 27 34 31 31 34 M31 36 C30 37.5 30 39 31 39 C32 39 32 37.5 31 36`,
+  driptongue: `M24 44 C20 38 27 32 24 25 M13 13 C13 27 35 27 35 13 M13 13 C18 10 30 10 35 13 C30 16 18 16 13 13 M29 22 C33 27 34 31 31 34 M31 36 C30 37.5 30 39 31 39 C32 39 32 37.5 31 36`,
   // Jellyfish-like bell trailing curly tendrils.
-  veilvine: `${GROUND} M24 44 C22 40 26 36 24 32 M13 20 C13 7 35 7 35 20 C30 18 18 18 13 20 Z M17 20 C15 24 19 26 17 30 M24 19 C26 23 22 26 24 31 M31 20 C33 24 29 26 31 30 M18 13 C21 11 27 11 30 13`,
+  veilvine: `M24 44 C22 40 26 36 24 32 M13 20 C13 7 35 7 35 20 C30 18 18 18 13 20 Z M17 20 C15 24 19 26 17 30 M24 19 C26 23 22 26 24 31 M31 20 C33 24 29 26 31 30 M18 13 C21 11 27 11 30 13`,
   // An eye-shaped bloom with lashes.
-  gloomorchid: `${GROUND} M24 44 C25 36 23 30 24 25 M9 16 C16 6 32 6 39 16 C32 26 16 26 9 16 Z M24 16 m-5 0 a5 5 0 1 0 10 0 a5 5 0 1 0 -10 0 M24 12.5 L24 19.5 M14 10 L11 6 M24 7 L24 2 M34 10 L37 6 M19 8 L17 3.5 M29 8 L31 3.5`,
+  gloomorchid: `M24 44 C25 36 23 30 24 25 M9 16 C16 6 32 6 39 16 C32 26 16 26 9 16 Z M24 16 m-5 0 a5 5 0 1 0 10 0 a5 5 0 1 0 -10 0 M24 12.5 L24 19.5 M14 10 L11 6 M24 7 L24 2 M34 10 L37 6 M19 8 L17 3.5 M29 8 L31 3.5`,
   // Solar-panel head with a crown of rays and spiky leaves.
-  'solar-thistle': `${GROUND} M24 44 L24 25 M24 36 L18 31 L21 34 L16 33 M24 33 L30 28 L27 31 L32 30 M24 19 m-6 0 a6 6 0 1 0 12 0 a6 6 0 1 0 -12 0 M18 19 L30 19 M24 13 L24 25 ${rays(24, 19, -170, -10, 7, 8, 14)}`,
+  'solar-thistle': `M24 44 L24 25 M24 36 L18 31 L21 34 L16 33 M24 33 L30 28 L27 31 L32 30 M24 19 m-6 0 a6 6 0 1 0 12 0 a6 6 0 1 0 -12 0 M18 19 L30 19 M24 13 L24 25 ${rays(24, 19, -170, -10, 7, 8, 14)}`,
 }
 
-export function stageArt(stage: GrowingStage): string {
-  return sketch(STAGES[stage])
+// Plants stand on their own patch of ground, except in the flowerbox, which has its own soil.
+export interface PlantArtOptions {
+  ground?: boolean
 }
 
-export function speciesArt(speciesId: string): string {
+const withGround = (paths: string, { ground = true }: PlantArtOptions) => (ground ? `${GROUND} ${paths}` : paths)
+
+export function stageArt(stage: GrowingStage, options: PlantArtOptions = {}): string {
+  return sketch(withGround(STAGES[stage], options))
+}
+
+export function speciesArt(speciesId: string, options: PlantArtOptions = {}): string {
   const paths = BLOOMS[speciesId]
   if (!paths) throw new Error(`No art for species: ${speciesId}`)
-  return sketch(paths)
+  return sketch(withGround(paths, options))
 }
 
 // A puffy cloud outline whose flat base sits at (x, y), scaled by s.
@@ -127,7 +134,15 @@ export function bookArt(): string {
   )
 }
 
-// Just the patch of earth, for an empty garden slot.
-export function groundArt(): string {
-  return sketch(GROUND)
+// A long wooden planter the garden grows in: lumpy soil, a rim plank, plank seams,
+// a little wood grain and a knot, standing on two small feet. Drawn on a 320x64 canvas.
+export function flowerboxArt(): string {
+  const soil = 'M10 8 C40 5 70 9 100 7 C130 5 150 9 180 7 C215 5 250 9 280 7 C295 6 305 8 310 8'
+  const rim = 'M4 10 L316 10 L316 18 L4 18 Z'
+  const body = 'M8 18 L312 18 L305 52 L15 52 Z'
+  const seams = 'M10 30 C80 29.5 240 30.5 310 30 M12 41 C90 40.5 230 41.5 308 41'
+  const grain = 'M40 24 C60 22.5 80 25.5 100 24 M150 35.5 C170 34 195 37 215 35.5 M70 46.5 C85 45.5 100 47.5 115 46.5 M245 24.5 C255 23.5 262 25 270 24'
+  const knot = 'M226 46 m-5 0 a5 2.6 0 1 0 10 0 a5 2.6 0 1 0 -10 0 M226 46 m-2 0 a2 1 0 1 0 4 0 a2 1 0 1 0 -4 0'
+  const feet = 'M34 52 L34 59 L50 59 L50 52 M270 52 L270 59 L286 59 L286 52'
+  return sketch(`${soil} ${rim} ${body} ${seams} ${grain} ${knot} ${feet}`, '0 0 320 64')
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { bookArt, groundArt, sparkleArt, speciesArt, stageArt, weatherArt } from './art.ts'
+import { bookArt, flowerboxArt, sparkleArt, speciesArt, stageArt, weatherArt } from './art.ts'
 import { WEATHERS } from './weather.ts'
 import { SPECIES } from './species.ts'
 
@@ -39,8 +39,22 @@ describe('bookArt', () => {
   })
 })
 
-describe('groundArt', () => {
+describe('ground lines', () => {
+  const GROUND = 'M9 44 C17 43 31 45 39 44'
+
+  it('draws plants on a patch of ground by default', () => {
+    expect(stageArt('sprout')).toContain(GROUND)
+    expect(speciesArt('glowcap')).toContain(GROUND)
+  })
+
+  it('leaves the ground out when the plant sits in the flowerbox', () => {
+    expect(stageArt('sprout', { ground: false })).not.toContain(GROUND)
+    expect(speciesArt('glowcap', { ground: false })).not.toContain(GROUND)
+  })
+})
+
+describe('flowerboxArt', () => {
   it('is a drawing', () => {
-    expect(groundArt()).toContain('<svg')
+    expect(flowerboxArt()).toContain('<svg')
   })
 })

@@ -409,24 +409,26 @@ main {
   }
 }
 
-/* The garden: one row of plants on a shared strip of sketched ground, no boxes. */
+/* The garden: five plants growing from one sketched wooden flowerbox. */
+.garden-wrap {
+  --slot: min(5.6rem, 15vw);
+  --slot-gap: 0.6rem;
+  --box-padding: 1.6rem;
+  --box-width: calc(var(--slot) * 5 + var(--slot-gap) * 4 + var(--box-padding) * 2);
+}
+
 .garden {
   display: flex;
-  justify-content: center;
+  gap: var(--slot-gap);
+  padding: 0 var(--box-padding);
 }
 
 .garden-slot {
-  --slot-size: min(4.2rem, 9vw);
   position: relative;
-  width: var(--slot-size);
-  height: var(--slot-size);
+  width: var(--slot);
+  height: var(--slot);
   border-radius: 50%;
   transition: background 0.15s ease;
-}
-
-/* Overlap neighbours so each patch of ground meets the next. */
-.garden-slot + .garden-slot {
-  margin-left: calc(var(--slot-size) * -0.26);
 }
 
 .garden-slot.clickable {
@@ -445,7 +447,15 @@ main {
   position: absolute;
   top: 0;
   right: 0.1rem;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-style: italic;
   color: var(--ink-soft);
+}
+
+/* The box is 5:1. Pull it up so the soil line (1/8 down the box) meets the
+   stem bases (which sit 1/12 above the bottom of each plant drawing). */
+.flowerbox {
+  width: var(--box-width);
+  aspect-ratio: 320 / 64;
+  margin-top: calc(-1 * (var(--slot) / 12 + var(--box-width) / 5 / 8));
 }

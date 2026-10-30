@@ -1,5 +1,6 @@
-import { emptyGarden, type Garden, type Plant } from './garden.ts'
-import type { Book } from './book.ts'
+import { GARDEN_CAPACITY, emptyGarden, type Garden, type Plant } from './garden.ts'
+import { recordPick, type Book } from './book.ts'
+import { localDateKey } from './dates.ts'
 import type { WeatherOverride } from './weather.ts'
 
 const STORAGE_KEY = 'pomodoro-garden'
@@ -17,12 +18,30 @@ function withDefaults(plant: Plant): Plant {
   return { ...plant, weatherSeconds: plant.weatherSeconds ?? {} }
 }
 
-// Older saves stored a short list with no gaps; lay it into the fixed row of slots.
-function toSlots(saved: (Plant | null)[]): Garden {
-  return emptyGarden().map((_, index) => {
-    const plant = saved[index]
-    return plant ? withDefaults(plant) : null
-  })
+// Lays a saved row into the fixed slots. A row that fits keeps its exact positions;
+// a longer row (from when the garden was bigger) is packed left, and flowers that
+// no longer fit are pressed into the book so nothing the player grew is lost.
+function toSlots(saved: (Plant | null)[], book: Book, today: string): { garden: Garden; book: Book } {
+  if (saved.length <= GARDEN_CAPACITY) {
+    const garden = emptyGarden().map((_, index) => {
+      const plant = saved[index]
+      return plant ? withDefaults(plant) : null
+    })
+    return { garden, book }
+  }
+
+  const plants = saved.filter((plant): plant is Plant => plant !== null).map(withDefaults)
+  const garden = emptyGarden().map((_, index) => plants[index] ?? null)
+  const overflowBook = plants
+    .slice(GARDEN_CAPACITY)
+    .reduce(
+      (updated, plant) =>
+        plant.kind === 'flower'
+          ? recordPick(updated, plant.speciesId, plant.perfect ? 'perfect' : 'normal', today)
+          : updated,
+      book,
+    )
+  return { garden, book: overflowBook }
 }
 
 export function parseState(raw: string | null, now: number): StoredState {
@@ -31,9 +50,11 @@ export function parseState(raw: string | null, now: number): StoredState {
   try {
     const parsed = JSON.parse(raw)
     if (!Array.isArray(parsed.garden)) return fresh
+    const savedBook: Book = typeof parsed.book === 'object' && parsed.book !== null ? parsed.book : {}
+    const { garden, book } = toSlots(parsed.garden, savedBook, localDateKey(new Date(now)))
     return {
-      garden: toSlots(parsed.garden),
-      book: typeof parsed.book === 'object' && parsed.book !== null ? parsed.book : {},
+      garden,
+      book,
       weatherOverride: parsed.weatherOverride ?? null,
       lastSeen: parsed.lastSeen ?? now,
     }

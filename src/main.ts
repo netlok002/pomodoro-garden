@@ -2,7 +2,7 @@ import './style.css'
 import { initSession } from './session.ts'
 import { initDevSpeed } from './devSpeed.ts'
 import { initClickSounds } from './clickSounds.ts'
-import { SKETCH_FILTERS, bookArt } from './art.ts'
+import { SKETCH_FILTERS, bookArt, flowerboxArt } from './art.ts'
 
 initDevSpeed()
 initClickSounds()
@@ -16,6 +16,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     <div id="controls"></div>
     <div class="garden-wrap">
       <div id="garden" class="garden"></div>
+      <div class="flowerbox">${flowerboxArt()}</div>
       <button id="book-button" class="book-button" title="Flower Book" aria-label="Flower Book">${bookArt()}</button>
     </div>
     <p id="note" class="note"></p>
