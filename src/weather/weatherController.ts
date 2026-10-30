@@ -1,8 +1,8 @@
 // Everything about today's weather: the real forecast for the saved zip (fetched at most
 // once a day), the simulation when there isn't one, the manual override, and a status
 // line explaining which is in use. onChange fires whenever the forecast shown changes.
-import { localDateKey } from './dates.ts'
-import type { GameState } from './gameState.ts'
+import { localDateKey } from '../game/dates.ts'
+import type { GameState } from '../game/gameState.ts'
 import { forecast, type Forecast, type Weather } from './weather.ts'
 import { ZipNotFoundError, fetchRealForecast, isFresh, isValidZip, lookupZip, type FetchFn } from './realWeather.ts'
 

@@ -1,4 +1,4 @@
-import { getSpeed } from './devSpeed.ts'
+import { getSpeed } from '../util/devSpeed.ts'
 
 const TICK_MS = 100
 

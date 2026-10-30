@@ -1,5 +1,5 @@
-import { weatherArt } from './art.ts'
-import { WEATHER_LABELS, type Forecast, type Weather } from './weather.ts'
+import { weatherArt } from '../art/art.ts'
+import { WEATHER_LABELS, type Forecast, type Weather } from '../weather/weather.ts'
 
 // The arc lives in a 320x128 box: centre near the bottom, days placed along it.
 const WIDTH = 320

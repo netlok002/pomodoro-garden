@@ -1,8 +1,8 @@
-import { GARDEN_CAPACITY, PLANTING_ORDER, emptyGarden, type Garden, type PendingBloom, type Plant } from './garden.ts'
-import { recordPick, type Book } from './book.ts'
-import { localDateKey } from './dates.ts'
-import type { WeatherOverride } from './weather.ts'
-import type { CachedForecast, Place } from './realWeather.ts'
+import { GARDEN_CAPACITY, PLANTING_ORDER, emptyGarden, type Garden, type PendingBloom, type Plant } from '../game/garden.ts'
+import { recordPick, type Book } from '../game/book.ts'
+import { localDateKey } from '../game/dates.ts'
+import type { WeatherOverride } from '../weather/weather.ts'
+import type { CachedForecast, Place } from '../weather/realWeather.ts'
 import { cleanBook, cleanForecastCache, cleanOverride, cleanPendingBloom, cleanPlace, cleanPlant } from './cleanSave.ts'
 
 const STORAGE_KEY = 'pomodoro-garden'

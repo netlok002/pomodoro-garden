@@ -1,6 +1,6 @@
 import { openModal } from './modal.ts'
-import { weatherArt } from './art.ts'
-import { WEATHERS, WEATHER_LABELS, type Weather } from './weather.ts'
+import { weatherArt } from '../art/art.ts'
+import { WEATHERS, WEATHER_LABELS, type Weather } from '../weather/weather.ts'
 import { pointOnCircle, wedgePath, WHEEL_CENTER } from './wheel.ts'
 
 const AUTO_RADIUS = 26

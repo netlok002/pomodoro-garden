@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { createGameState } from './gameState.ts'
 import { emptyGarden } from './garden.ts'
-import type { StoredState } from './storage.ts'
+import type { StoredState } from '../save/storage.ts'
 
 const saved: StoredState = {
   garden: emptyGarden(),

@@ -1,7 +1,7 @@
 // The saved game in one place: read it with `current`, change it with `update`, and
 // every change is saved straight away. Loading and saving are passed in so tests can
 // stand in for localStorage.
-import { loadState, saveState, type StoredState } from './storage.ts'
+import { loadState, saveState, type StoredState } from '../save/storage.ts'
 
 export type GameChanges = Partial<Omit<StoredState, 'lastSeen'>>
 

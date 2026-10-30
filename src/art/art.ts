@@ -1,4 +1,4 @@
-import type { Weather } from './weather.ts'
+import type { Weather } from '../weather/weather.ts'
 
 // Placeholder line drawings, swapped for hand-drawn art later.
 // Every drawing sits on a 48x48 canvas with the ground line at y = 44.

@@ -1,4 +1,4 @@
-import { localDateKey } from './dates.ts'
+import { localDateKey } from '../game/dates.ts'
 
 export const WEATHERS = ['clear', 'partly-cloudy', 'overcast', 'rainy'] as const
 

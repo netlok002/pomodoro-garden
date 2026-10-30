@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { SPECIES, getSpecies } from './species.ts'
-import { WEATHERS } from './weather.ts'
+import { WEATHERS } from '../weather/weather.ts'
 
 describe('SPECIES', () => {
   it('has 8 species', () => {

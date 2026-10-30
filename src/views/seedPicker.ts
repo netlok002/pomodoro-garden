@@ -1,6 +1,6 @@
 import { openModal } from './modal.ts'
-import { SPECIES } from './species.ts'
-import { speciesArt } from './art.ts'
+import { SPECIES } from '../game/species.ts'
+import { speciesArt } from '../art/art.ts'
 import { pointOnCircle, wedgePath } from './wheel.ts'
 
 const ART_RADIUS = 52

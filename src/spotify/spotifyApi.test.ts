@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { fakeFetch } from './testing/fakeFetch.ts'
+import { fakeFetch } from '../testing/fakeFetch.ts'
 import { SpotifyError, getDevices, getPlayback, getPlaylists, play, setVolume } from './spotifyApi.ts'
 
 

@@ -1,5 +1,5 @@
 import { openModal } from './modal.ts'
-import type { Spotify } from './spotify.ts'
+import type { Spotify } from '../spotify/spotify.ts'
 
 // The radio's page: connect Spotify, choose the focus playlist, see what the music is doing.
 export function openRadio(spotify: Spotify) {

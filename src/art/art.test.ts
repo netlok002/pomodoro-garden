@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { bookArt, flowerboxArt, noteArt, radioArt, sparkleArt, speciesArt, stageArt, weatherArt } from './art.ts'
-import { WEATHERS } from './weather.ts'
-import { SPECIES } from './species.ts'
+import { WEATHERS } from '../weather/weather.ts'
+import { SPECIES } from '../game/species.ts'
 
 describe('speciesArt', () => {
   it('has a drawing for every species', () => {

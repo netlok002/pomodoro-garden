@@ -1,10 +1,10 @@
 import { openModal } from './modal.ts'
-import { playBookClose, playBookOpen } from './sfx.ts'
-import { speciesArt } from './art.ts'
-import { bookProgress, type Book, type BookEntry } from './book.ts'
-import { SPECIES, type Species } from './species.ts'
-import { WEATHER_LABELS } from './weather.ts'
-import { escapeHtml } from './html.ts'
+import { playBookClose, playBookOpen } from '../audio/sfx.ts'
+import { speciesArt } from '../art/art.ts'
+import { bookProgress, type Book, type BookEntry } from '../game/book.ts'
+import { SPECIES, type Species } from '../game/species.ts'
+import { WEATHER_LABELS } from '../weather/weather.ts'
+import { escapeHtml } from '../util/html.ts'
 
 function countLine(label: string, entry: BookEntry | undefined): string {
   return entry ? `${label} ×${entry.count}` : `${label} —`

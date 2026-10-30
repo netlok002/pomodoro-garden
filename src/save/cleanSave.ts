@@ -1,12 +1,12 @@
 // Saves can come from a pasted save code, so every field is treated as untrusted:
 // anything unexpected is dropped rather than trusted. Missing fields from older saves
 // get sensible defaults.
-import { isObject } from './typeGuards.ts'
-import { GARDEN_CAPACITY, type PendingBloom, type Plant } from './garden.ts'
-import type { Book, BookEntry, Variant } from './book.ts'
-import type { CachedForecast, Place } from './realWeather.ts'
-import { SPECIES } from './species.ts'
-import { WEATHERS, type Forecast, type Weather, type WeatherOverride, type WeatherTally } from './weather.ts'
+import { isObject } from '../util/typeGuards.ts'
+import { GARDEN_CAPACITY, type PendingBloom, type Plant } from '../game/garden.ts'
+import type { Book, BookEntry, Variant } from '../game/book.ts'
+import type { CachedForecast, Place } from '../weather/realWeather.ts'
+import { SPECIES } from '../game/species.ts'
+import { WEATHERS, type Forecast, type Weather, type WeatherOverride, type WeatherTally } from '../weather/weather.ts'
 
 const isKnownSpecies = (id: unknown): id is string => SPECIES.some((species) => species.id === id)
 const isWeather = (value: unknown): value is Weather => WEATHERS.includes(value as Weather)

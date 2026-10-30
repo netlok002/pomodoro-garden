@@ -1,4 +1,4 @@
-import type { WeatherTally } from './weather.ts'
+import type { WeatherTally } from '../weather/weather.ts'
 
 export const GARDEN_CAPACITY = 5
 

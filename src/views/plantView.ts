@@ -1,6 +1,6 @@
-import { bloomStageFor, growthStage, stageName } from './growth.ts'
-import { sparkleArt, speciesArt, stageArt, type PlantArtOptions } from './art.ts'
-import type { Species } from './species.ts'
+import { bloomStageFor, growthStage, stageName } from '../game/growth.ts'
+import { sparkleArt, speciesArt, stageArt, type PlantArtOptions } from '../art/art.ts'
+import type { Species } from '../game/species.ts'
 
 export function plantArt(species: Species, elapsedSeconds: number, options: PlantArtOptions = {}): string {
   const durationSeconds = species.durationMinutes * 60

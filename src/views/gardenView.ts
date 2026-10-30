@@ -1,7 +1,7 @@
-import { GARDEN_CAPACITY, type Garden } from './garden.ts'
-import { getSpecies } from './species.ts'
+import { GARDEN_CAPACITY, type Garden } from '../game/garden.ts'
+import { getSpecies } from '../game/species.ts'
 import { plantArt } from './plantView.ts'
-import { speciesArt } from './art.ts'
+import { speciesArt } from '../art/art.ts'
 
 // Plants grow from the flowerbox's soil, so they skip their own patch of ground.
 const IN_BOX = { ground: false }

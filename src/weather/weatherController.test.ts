@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { createWeatherController } from './weatherController.ts'
-import { createGameState } from './gameState.ts'
-import { emptyGarden } from './garden.ts'
+import { createGameState } from '../game/gameState.ts'
+import { emptyGarden } from '../game/garden.ts'
 import { simulatedWeather } from './weather.ts'
-import type { StoredState } from './storage.ts'
+import type { StoredState } from '../save/storage.ts'
 
 const NOW = new Date(2026, 9, 30, 15, 0)
 

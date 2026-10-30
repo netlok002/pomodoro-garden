@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { WEATHERS, addWeatherTime, currentWeather, forecast, isPerfect, simulatedWeather } from './weather.ts'
-import { localDateKey } from './dates.ts'
+import { localDateKey } from '../game/dates.ts'
 
 describe('simulatedWeather', () => {
   it('always gives the same weather for the same date', () => {

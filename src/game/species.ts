@@ -1,4 +1,4 @@
-import type { Weather } from './weather.ts'
+import type { Weather } from '../weather/weather.ts'
 
 export interface Species {
   id: string

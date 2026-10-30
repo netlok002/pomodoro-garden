@@ -1,10 +1,10 @@
 import './styles/index.css'
 import { initSession } from './session.ts'
-import { initDevSpeed } from './devSpeed.ts'
-import { initClickSounds } from './clickSounds.ts'
-import { createSpotify } from './spotify.ts'
-import { openRadio } from './radioView.ts'
-import { SKETCH_FILTERS, bookArt, flowerboxArt, noteArt, radioArt } from './art.ts'
+import { initDevSpeed } from './util/devSpeed.ts'
+import { initClickSounds } from './audio/clickSounds.ts'
+import { createSpotify } from './spotify/spotify.ts'
+import { openRadio } from './views/radioView.ts'
+import { SKETCH_FILTERS, bookArt, flowerboxArt, noteArt, radioArt } from './art/art.ts'
 
 // Speed-up shortcuts (Ctrl+Shift+1–4) only exist when running locally, not on the live site.
 if (import.meta.env.DEV) initDevSpeed()
