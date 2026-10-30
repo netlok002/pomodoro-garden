@@ -60,4 +60,27 @@
   .garden-slot-minutes {
     font-size: 0.8rem;
   }
+
+  /* Paper pages (book, radio) become full-screen sheets. */
+  .modal-panel.modal-page {
+    width: 100vw;
+    height: 100dvh;
+    max-height: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0)
+      env(safe-area-inset-left, 0);
+    box-sizing: border-box;
+  }
+
+  .paper-page {
+    padding: 0.5rem 1rem 2rem;
+  }
+
+  /* Two flower cards per row. */
+  .book-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.6rem;
+  }
 }

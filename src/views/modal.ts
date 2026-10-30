@@ -3,11 +3,13 @@ export interface ModalOptions {
   panelClass?: string
   // Called once whenever the modal closes, however it was closed.
   onClose?: () => void
+  // A visible × button: needed on phones, where a full-screen page leaves nowhere to tap outside.
+  closeButton?: boolean
 }
 
 export function openModal(
   render: (body: HTMLElement, close: () => void) => (() => void) | void,
-  { panelClass = '', onClose }: ModalOptions = {},
+  { panelClass = '', onClose, closeButton = false }: ModalOptions = {},
 ) {
   let cleanupContent: (() => void) | void
 
@@ -15,6 +17,7 @@ export function openModal(
   overlay.className = 'modal-overlay'
   overlay.innerHTML = `
     <div class="modal-panel ${panelClass}">
+      ${closeButton ? '<button type="button" class="modal-close" aria-label="Close">×</button>' : ''}
       <div class="modal-body"></div>
     </div>
   `
@@ -35,6 +38,7 @@ export function openModal(
     if (event.target === overlay) close()
   })
   document.addEventListener('keydown', onKeydown)
+  overlay.querySelector('.modal-close')?.addEventListener('click', close)
 
   const body = overlay.querySelector<HTMLElement>('.modal-body')!
   cleanupContent = render(body, close)

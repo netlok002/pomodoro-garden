@@ -1,9 +1,13 @@
 /* Flower Book: a paper page instead of the round wheel panel. */
 .modal-panel.modal-page {
+  /* Paper pages read top to bottom and scroll, unlike the centred round wheels. */
+  display: block;
   width: min(92vw, 720px);
   aspect-ratio: auto;
   max-height: 88vh;
+  max-height: 88dvh;
   overflow-y: auto;
+  overscroll-behavior: contain;
   border-radius: 4px;
   clip-path: none;
   border: 1px solid var(--ink-soft);
@@ -238,4 +242,29 @@
 .radio-now-text {
   font-size: 0.9rem;
   font-style: italic;
+}
+
+.modal-page .modal-body {
+  height: auto;
+}
+
+/* The page's × button stays in the top corner while the page scrolls. */
+.modal-close {
+  position: sticky;
+  top: 0;
+  float: right;
+  z-index: 1;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 1.8rem;
+  line-height: 1;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.modal-close:hover {
+  color: var(--ink);
 }

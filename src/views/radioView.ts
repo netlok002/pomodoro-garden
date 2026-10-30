@@ -89,5 +89,5 @@ export function openRadio(spotify: Spotify) {
     }
 
     void render()
-  }, { panelClass: 'modal-page' })
+  }, { panelClass: 'modal-page', closeButton: true })
 }

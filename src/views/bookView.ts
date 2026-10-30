@@ -173,5 +173,5 @@ export function openBook(book: Book, settings: BookSettings) {
       form.removeEventListener('submit', onSubmit)
       saveInput.removeEventListener('input', onSaveInput)
     }
-  }, { panelClass: 'modal-page', onClose: playBookClose })
+  }, { panelClass: 'modal-page', onClose: playBookClose, closeButton: true })
 }
