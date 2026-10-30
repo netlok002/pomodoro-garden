@@ -9,7 +9,8 @@ const ART_SIZE = 50
 const WEDGE_DEGREES = 360 / WEATHERS.length
 
 // Picking a weather overrides today; the plain centre circle (null) goes back to the forecast.
-// No visible text: the drawings speak for themselves, and the <title>s name them for screen readers.
+// The wedges are drawings only (their <title>s name them for screen readers); the centre
+// is labelled "local weather" as ordinary page text so it lines up with the app's type.
 export function openWeatherPicker(current: Weather | null, onSelect: (weather: Weather | null) => void) {
   openModal((body, close) => {
     const wedges = WEATHERS.map((weather, index) => {
@@ -30,7 +31,10 @@ export function openWeatherPicker(current: Weather | null, onSelect: (weather: W
     body.innerHTML = `
       <svg class="seed-picker" viewBox="0 0 200 200">
         ${wedges}
-        <circle class="seed-wedge${current === null ? ' selected' : ''}" data-weather="auto" cx="${WHEEL_CENTER}" cy="${WHEEL_CENTER}" r="${AUTO_RADIUS}"><title>Use the forecast</title></circle>
+        <circle class="seed-wedge${current === null ? ' selected' : ''}" data-weather="auto" cx="${WHEEL_CENTER}" cy="${WHEEL_CENTER}" r="${AUTO_RADIUS}"><title>Use the local forecast</title></circle>
+        <foreignObject class="weather-center-label" x="${WHEEL_CENTER - AUTO_RADIUS}" y="${WHEEL_CENTER - AUTO_RADIUS}" width="${AUTO_RADIUS * 2}" height="${AUTO_RADIUS * 2}">
+          <div class="weather-center-text">local weather</div>
+        </foreignObject>
       </svg>
     `
 

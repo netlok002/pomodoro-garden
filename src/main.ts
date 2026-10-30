@@ -21,7 +21,10 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <div id="garden" class="garden"></div>
       <div class="flowerbox">${flowerboxArt()}</div>
       <button id="radio-button" class="radio-button" aria-label="Radio" aria-describedby="radio-bubble">${radioArt()}</button>
-      <div id="radio-bubble" class="radio-bubble" role="status" hidden><span class="radio-bubble-text"></span></div>
+      <div id="radio-bubble" class="radio-bubble" role="status" hidden>
+        <span class="radio-bubble-heading">Now playing</span>
+        <span class="radio-bubble-text"></span>
+      </div>
       <div id="radio-notes" class="radio-notes" aria-hidden="true" hidden>
         <span class="radio-note note-1">${noteArt('single')}</span>
         <span class="radio-note note-2">${noteArt('pair')}</span>
