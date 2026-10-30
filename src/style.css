@@ -393,22 +393,32 @@ main {
   display: none;
 }
 
-.book-link {
-  position: fixed;
-  right: 1.25rem;
-  bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
-  padding: 0.3rem 0.6rem;
-  border: none;
-  border-bottom: 1px dashed var(--ink-soft);
-  background: none;
-  font: inherit;
-  font-style: italic;
-  color: var(--ink);
-  cursor: pointer;
+/* The garden and its book sit together; the book hangs just right of the grid. */
+.garden-wrap {
+  position: relative;
+  width: fit-content;
+  margin: 2rem auto 0;
 }
 
-.book-link:hover {
-  color: var(--rose);
+.garden-wrap .garden {
+  margin-top: 0;
+}
+
+.book-button {
+  position: absolute;
+  left: calc(100% + 0.9rem);
+  bottom: 0;
+  width: 3rem;
+  height: 3rem;
+  padding: 0.2rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.book-button:hover {
+  transform: rotate(-4deg) scale(1.06);
 }
 
 /* Celebration: the bloom sways in the wind while ink sparkles twinkle around it. */

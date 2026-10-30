@@ -1,7 +1,13 @@
-// panelClass picks the panel's shape: round wheels by default, 'modal-page' for a paper page.
+export interface ModalOptions {
+  // The panel's shape: round wheels by default, 'modal-page' for a paper page.
+  panelClass?: string
+  // Called once whenever the modal closes, however it was closed.
+  onClose?: () => void
+}
+
 export function openModal(
   render: (body: HTMLElement, close: () => void) => (() => void) | void,
-  panelClass = '',
+  { panelClass = '', onClose }: ModalOptions = {},
 ) {
   let cleanupContent: (() => void) | void
 
@@ -18,6 +24,7 @@ export function openModal(
     cleanupContent?.()
     document.removeEventListener('keydown', onKeydown)
     overlay.remove()
+    onClose?.()
   }
 
   const onKeydown = (event: KeyboardEvent) => {

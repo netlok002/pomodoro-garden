@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { sparkleArt, speciesArt, stageArt, weatherArt } from './art.ts'
+import { bookArt, sparkleArt, speciesArt, stageArt, weatherArt } from './art.ts'
 import { WEATHERS } from './weather.ts'
 import { SPECIES } from './species.ts'
 
@@ -30,5 +30,11 @@ describe('weatherArt', () => {
 describe('sparkleArt', () => {
   it('is a drawing', () => {
     expect(sparkleArt()).toContain('<svg')
+  })
+})
+
+describe('bookArt', () => {
+  it('is a drawing', () => {
+    expect(bookArt()).toContain('<svg')
   })
 })

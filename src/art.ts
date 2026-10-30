@@ -117,3 +117,12 @@ export function weatherArt(weather: Weather): string {
 export function sparkleArt(): string {
   return sketch('M24 8 C25 20 28 23 40 24 C28 25 25 28 24 40 C23 28 20 25 8 24 C20 23 23 20 24 8 Z')
 }
+
+// A closed book with a ribbon bookmark, for the Flower Book button.
+export function bookArt(): string {
+  return sketch(
+    'M12 10 C18 9 32 9 37 10 L37 40 C32 39 18 39 12 40 Z M12 10 C10 11 10 39 12 40 ' +
+      'M15 40 L15 43 C21 42.5 31 42.5 37 43 L37 40 M18 17 C23 16.5 27 16.5 31 17 M18 21 C22 20.6 25 20.6 28 21 ' +
+      'M31 9.5 L31 18 L33 16 L35 18 L35 9.5 M22 31 C21 28 23 26 24 25 C25 26 27 28 26 31 C25 32 23 32 22 31 M24 31 L24 35',
+  )
+}

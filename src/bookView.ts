@@ -1,4 +1,5 @@
 import { openModal } from './modal.ts'
+import { playBookClose, playBookOpen } from './sfx.ts'
 import { speciesArt } from './art.ts'
 import { bookProgress, type Book, type BookEntry } from './book.ts'
 import { SPECIES, type Species } from './species.ts'
@@ -39,6 +40,7 @@ function cardHtml(species: Species, book: Book): string {
 }
 
 export function openBook(book: Book) {
+  playBookOpen()
   openModal((body) => {
     const { found, total } = bookProgress(book, SPECIES.length)
     body.innerHTML = `
@@ -57,5 +59,5 @@ export function openBook(book: Book) {
     }
     body.addEventListener('click', onClick)
     return () => body.removeEventListener('click', onClick)
-  }, 'modal-page')
+  }, { panelClass: 'modal-page', onClose: playBookClose })
 }

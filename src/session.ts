@@ -35,7 +35,7 @@ export interface SessionElements {
   controls: HTMLElement
   garden: HTMLElement
   note: HTMLElement
-  bookLink: HTMLElement
+  bookButton: HTMLElement
 }
 
 export function initSession(elements: SessionElements) {
@@ -181,7 +181,7 @@ export function initSession(elements: SessionElements) {
     })
   }
 
-  elements.bookLink.addEventListener('click', () => openBook(book))
+  elements.bookButton.addEventListener('click', () => openBook(book))
 
   goIdle()
 }
