@@ -1,0 +1,6 @@
+# Store and check out text files with Unix line endings on every machine.
+* text=auto eol=lf
+
+# Binary assets: never touch.
+*.woff2 binary
+*.wav binary
