@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+import { fakeFetch } from './testing/fakeFetch.ts'
 import {
   SPOTIFY_SCOPES,
   authorizeUrl,
@@ -13,15 +14,6 @@ import {
 
 const NOW = 1_000_000
 
-// A stand-in for fetch that records requests and answers with a fixed reply.
-const fakeFetch = (status: number, body: unknown) => {
-  const calls: { url: string; init?: RequestInit }[] = []
-  const fetchFn = async (url: string, init?: RequestInit) => {
-    calls.push({ url, init })
-    return { ok: status >= 200 && status < 300, status, json: async () => body } as Response
-  }
-  return { fetchFn, calls }
-}
 
 describe('makeCodeVerifier', () => {
   it('makes a long random string using only URL-safe characters', () => {
@@ -84,7 +76,7 @@ describe('exchangeCode', () => {
     const tokens = await exchangeCode('client123', 'https://example.test/app/', 'code1', 'verifier1', NOW, fetchFn)
     expect(tokens).toEqual({ accessToken: 'acc', refreshToken: 'ref', expiresAt: NOW + 3_600_000 })
     expect(calls[0].url).toBe('https://accounts.spotify.com/api/token')
-    const body = new URLSearchParams(String(calls[0].init?.body))
+    const body = new URLSearchParams(String(calls[0].body))
     expect(body.get('grant_type')).toBe('authorization_code')
     expect(body.get('code')).toBe('code1')
     expect(body.get('code_verifier')).toBe('verifier1')
@@ -107,7 +99,7 @@ describe('refreshTokens', () => {
       refreshToken: 'ref1',
       expiresAt: NOW + 3_600_000,
     })
-    expect(new URLSearchParams(String(calls[0].init?.body)).get('grant_type')).toBe('refresh_token')
+    expect(new URLSearchParams(String(calls[0].body)).get('grant_type')).toBe('refresh_token')
   })
 
   it('uses a new refresh token when Spotify rotates it', async () => {

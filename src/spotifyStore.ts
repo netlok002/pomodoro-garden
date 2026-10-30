@@ -1,4 +1,5 @@
 // Spotify settings live apart from the game save, so save codes never carry login tokens.
+import { isObject } from './typeGuards.ts'
 import type { SpotifyTokens } from './spotifyAuth.ts'
 
 const STORAGE_KEY = 'pomodoro-garden-spotify'
@@ -15,7 +16,6 @@ export interface SpotifyState {
   rememberedVolume: number | null
 }
 
-const isObject = (value: unknown): value is Record<string, any> => typeof value === 'object' && value !== null
 
 function cleanTokens(value: unknown): SpotifyTokens | null {
   if (!isObject(value)) return null

@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+import { fakeFetch } from './testing/fakeFetch.ts'
 import {
   ZipNotFoundError,
   fetchRealForecast,
@@ -13,15 +14,6 @@ import {
 
 const PORTLAND: Place = { zip: '97201', name: 'Portland', state: 'OR', latitude: 45.5078, longitude: -122.6897 }
 
-// A stand-in for the browser's fetch that answers with a fixed status and body.
-const fakeFetch = (status: number, body: unknown) => {
-  const calls: string[] = []
-  const fetchFn = async (url: string) => {
-    calls.push(url)
-    return { ok: status >= 200 && status < 300, status, json: async () => body } as Response
-  }
-  return { fetchFn, calls }
-}
 
 describe('weatherFromCode', () => {
   it('sorts weather codes into our four weathers', () => {
@@ -99,7 +91,7 @@ describe('lookupZip', () => {
       places: [{ 'place name': 'Portland', 'state abbreviation': 'OR', latitude: '45.5078', longitude: '-122.6897' }],
     })
     expect(await lookupZip('97201', fetchFn)).toEqual(PORTLAND)
-    expect(calls).toEqual(['https://api.zippopotam.us/us/97201'])
+    expect(calls.map((call) => call.url)).toEqual(['https://api.zippopotam.us/us/97201'])
   })
 
   it('reports an unknown zip clearly', async () => {
@@ -112,11 +104,11 @@ describe('fetchRealForecast', () => {
   it('asks Open-Meteo for yesterday through tomorrow at the place', async () => {
     const { fetchFn, calls } = fakeFetch(200, { daily: { weather_code: [61, 2, 0] } })
     expect(await fetchRealForecast(PORTLAND, fetchFn)).toEqual({ yesterday: 'rainy', today: 'partly-cloudy', tomorrow: 'clear' })
-    expect(calls[0]).toContain('latitude=45.5078')
-    expect(calls[0]).toContain('longitude=-122.6897')
-    expect(calls[0]).toContain('past_days=1')
-    expect(calls[0]).toContain('forecast_days=2')
-    expect(calls[0]).toContain('timezone=auto')
+    expect(calls[0].url).toContain('latitude=45.5078')
+    expect(calls[0].url).toContain('longitude=-122.6897')
+    expect(calls[0].url).toContain('past_days=1')
+    expect(calls[0].url).toContain('forecast_days=2')
+    expect(calls[0].url).toContain('timezone=auto')
   })
 
   it('fails when the service is down', async () => {

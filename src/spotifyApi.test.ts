@@ -1,16 +1,7 @@
 import { describe, it, expect } from 'vitest'
+import { fakeFetch } from './testing/fakeFetch.ts'
 import { SpotifyError, getDevices, getPlayback, getPlaylists, play, setVolume } from './spotifyApi.ts'
 
-// Records each request and answers with a fixed status and body.
-const fakeFetch = (status: number, body: unknown = {}) => {
-  const calls: { url: string; method: string; body?: string; auth?: string }[] = []
-  const fetchFn = async (url: string, init?: RequestInit) => {
-    const headers = new Headers(init?.headers)
-    calls.push({ url, method: init?.method ?? 'GET', body: init?.body as string | undefined, auth: headers.get('Authorization') ?? undefined })
-    return { ok: status >= 200 && status < 300, status, json: async () => body } as Response
-  }
-  return { fetchFn, calls }
-}
 
 describe('getPlaylists', () => {
   it("lists the player's playlists with the access token", async () => {

@@ -1,13 +1,13 @@
 // Saves can come from a pasted save code, so every field is treated as untrusted:
 // anything unexpected is dropped rather than trusted. Missing fields from older saves
 // get sensible defaults.
+import { isObject } from './typeGuards.ts'
 import { GARDEN_CAPACITY, type PendingBloom, type Plant } from './garden.ts'
 import type { Book, BookEntry, Variant } from './book.ts'
 import type { CachedForecast, Place } from './realWeather.ts'
 import { SPECIES } from './species.ts'
 import { WEATHERS, type Forecast, type Weather, type WeatherOverride, type WeatherTally } from './weather.ts'
 
-const isObject = (value: unknown): value is Record<string, any> => typeof value === 'object' && value !== null
 const isKnownSpecies = (id: unknown): id is string => SPECIES.some((species) => species.id === id)
 const isWeather = (value: unknown): value is Weather => WEATHERS.includes(value as Weather)
 const isDateKey = (value: unknown): value is string => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)
