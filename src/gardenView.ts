@@ -9,6 +9,8 @@ const IN_BOX = { ground: false }
 export interface GardenHandlers {
   onSproutClick: (slotIndex: number) => void
   onFlowerClick: (slotIndex: number) => void
+  // Called with a slot when the pointer moves onto a sprout, and null when it leaves.
+  onSproutHover: (slotIndex: number | null) => void
 }
 
 // Handlers are omitted while a timer runs, so nothing can be resumed or picked mid-session.
@@ -28,7 +30,7 @@ export function renderGarden(container: HTMLElement, garden: Garden, handlers?: 
 
     const minutesLeft = Math.ceil((species.durationMinutes * 60 - plant.elapsedSeconds) / 60)
     return `
-      <div class="garden-slot sprout${clickable}" data-slot="${index}" title="${species.name} sprout — ${minutesLeft} min left">
+      <div class="garden-slot sprout${clickable}" data-slot="${index}" aria-label="${species.name} sprout, ${minutesLeft} minutes left">
         ${plantArt(species, plant.elapsedSeconds, IN_BOX)}
         <span class="garden-slot-minutes">${minutesLeft}m</span>
       </div>
@@ -40,6 +42,8 @@ export function renderGarden(container: HTMLElement, garden: Garden, handlers?: 
   if (!handlers) return
   container.querySelectorAll<HTMLElement>('.garden-slot.sprout').forEach((slot) => {
     slot.addEventListener('click', () => handlers.onSproutClick(Number(slot.dataset.slot)))
+    slot.addEventListener('mouseenter', () => handlers.onSproutHover(Number(slot.dataset.slot)))
+    slot.addEventListener('mouseleave', () => handlers.onSproutHover(null))
   })
   container.querySelectorAll<HTMLElement>('.garden-slot.flower').forEach((slot) => {
     slot.addEventListener('click', () => handlers.onFlowerClick(Number(slot.dataset.slot)))

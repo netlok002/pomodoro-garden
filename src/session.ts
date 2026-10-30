@@ -153,11 +153,36 @@ export function initSession(elements: SessionElements, hooks: SessionHooks = {})
     goIdle(note)
   }
 
-  const goIdle = (note = '') => {
+  // The middle of the screen while idle: the chosen seed and its time, which opens the seed picker.
+  const renderIdleCenter = () => {
     const species = getSpecies(selectedSpeciesId)
+    renderSeedChoice(elements.plant, species)
+    elements.display.innerHTML = `<span id="timer-value" class="timer-value">${formatTime(species.durationMinutes * 60)}</span>`
+    elements.display.querySelector<HTMLSpanElement>('#timer-value')!.addEventListener('click', () => {
+      openSeedPicker(selectedSpeciesId, (speciesId) => {
+        selectedSpeciesId = speciesId
+        goIdle()
+      })
+    })
+  }
+
+  // Hovering a sprout previews it in the middle: how far it has grown and the time it has left.
+  const previewSprout = (slotIndex: number | null) => {
+    const sprout = slotIndex === null ? null : garden[slotIndex]
+    if (sprout?.kind !== 'sprout') {
+      renderIdleCenter()
+      return
+    }
+    const species = getSpecies(sprout.speciesId)
+    renderGrowingPlant(elements.plant, species, sprout.elapsedSeconds)
+    const secondsLeft = species.durationMinutes * 60 - sprout.elapsedSeconds
+    elements.display.innerHTML = `<span class="timer-preview">${formatTime(secondsLeft)}</span>`
+  }
+
+  const goIdle = (note = '') => {
     renderWeather()
     void refreshForecast()
-    renderSeedChoice(elements.plant, species)
+    renderIdleCenter()
     renderGarden(elements.garden, garden, {
       onSproutClick: (slotIndex) => {
         const sprout = garden[slotIndex]
@@ -170,16 +195,9 @@ export function initSession(elements: SessionElements, hooks: SessionHooks = {})
         })
       },
       onFlowerClick: pickFlower,
+      onSproutHover: previewSprout,
     })
     elements.note.textContent = note
-
-    elements.display.innerHTML = `<span id="timer-value" class="timer-value">${formatTime(species.durationMinutes * 60)}</span>`
-    elements.display.querySelector<HTMLSpanElement>('#timer-value')!.addEventListener('click', () => {
-      openSeedPicker(selectedSpeciesId, (speciesId) => {
-        selectedSpeciesId = speciesId
-        goIdle()
-      })
-    })
 
     if (isFull(garden)) {
       elements.controls.innerHTML = '<div class="select-option disabled">Your garden is full — click a flower to pick it</div>'

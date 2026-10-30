@@ -4,7 +4,7 @@ import type { Playback } from './spotifyApi.ts'
 
 const PLAYLIST = 'spotify:playlist:focus'
 const device = { id: 'd1', volumePercent: 80, supportsVolume: true }
-const playing = (contextUri: string | null, isPlaying = true): Playback => ({ isPlaying, contextUri, device })
+const playing = (contextUri: string | null, isPlaying = true): Playback => ({ isPlaying, contextUri, device, track: null })
 
 describe('focusStartAction', () => {
   it('starts the playlist when nothing is playing anywhere', () => {

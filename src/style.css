@@ -5,6 +5,8 @@
   --ink: #5b4e3f;
   --ink-soft: #9a8b74;
   --rose: #d9a5a8;
+  --rose-deep: #a65d68;
+  --button-text: #fffaf0;
   --butter: #efd88e;
   --sage: #b4c2a0;
   --sky: #a9c6d8;
@@ -91,9 +93,16 @@ main {
   border-radius: 2px;
 }
 
+/* The main action (Plant, Plant in garden): a deeper rose so it reads as clickable. */
 .select-option.selected {
-  background: var(--rose);
-  color: var(--paper);
+  background: var(--rose-deep);
+  color: var(--button-text);
+  box-shadow: 0 1px 3px rgba(91, 78, 63, 0.25);
+  transition: background 0.15s ease;
+}
+
+.select-option.selected:hover {
+  background: #93505a;
 }
 
 .select-option.disabled {
@@ -468,7 +477,8 @@ main {
 .garden-slot-minutes {
   position: absolute;
   top: 0;
-  right: 0.1rem;
+  left: 50%;
+  transform: translateX(-50%);
   font-size: 0.75rem;
   font-style: italic;
   color: var(--ink-soft);
@@ -623,4 +633,59 @@ main {
 
 .radio-note {
   margin-top: 1.2rem;
+}
+
+/* "Now playing" speech bubble above the radio, right-aligned with it, three lines tall. */
+.radio-bubble {
+  position: absolute;
+  right: -4.2rem;
+  bottom: calc(3.6rem + 0.9rem);
+  width: 15rem;
+  box-sizing: border-box;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--ink-soft);
+  border-radius: 10px;
+  background: var(--paper);
+  box-shadow: 0 3px 10px rgba(91, 78, 63, 0.12);
+  font-size: 0.85rem;
+  font-style: italic;
+  line-height: 1.3;
+  text-align: right;
+  /* Room for three lines of text. */
+  height: calc(3 * 1.3em + 0.9rem);
+  z-index: 5;
+  pointer-events: none;
+}
+
+.radio-bubble[hidden] {
+  display: none;
+}
+
+/* The bubble's tail points down at the radio. */
+.radio-bubble::after {
+  content: '';
+  position: absolute;
+  right: 1.4rem;
+  bottom: -0.45rem;
+  width: 0.8rem;
+  height: 0.8rem;
+  background: var(--paper);
+  border-right: 1px solid var(--ink-soft);
+  border-bottom: 1px solid var(--ink-soft);
+  transform: rotate(45deg);
+}
+
+/* Anything longer than three lines is trimmed with an ellipsis. The trim lives on the
+   text, not the bubble, so the tail outside the bubble isn't cut off. */
+.radio-bubble-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+
+/* A sprout's time left while previewing it: shown, but not clickable like the real timer. */
+.timer-preview {
+  color: var(--ink-soft);
 }

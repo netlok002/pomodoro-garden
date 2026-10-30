@@ -45,7 +45,17 @@ describe('getPlayback', () => {
       isPlaying: true,
       contextUri: 'spotify:playlist:p1',
       device: { id: 'd1', volumePercent: 70, supportsVolume: true },
+      track: null,
     })
+  })
+
+  it('includes the song and its artists', async () => {
+    const { fetchFn } = fakeFetch(200, {
+      is_playing: true,
+      device: { id: 'd1', volume_percent: 70, supports_volume: true },
+      item: { name: 'Weightless', artists: [{ name: 'Marconi Union' }, { name: 'Guest' }] },
+    })
+    expect((await getPlayback('tok', fetchFn))?.track).toEqual({ name: 'Weightless', artists: 'Marconi Union, Guest' })
   })
 
   it('gives null when nothing is playing anywhere', async () => {

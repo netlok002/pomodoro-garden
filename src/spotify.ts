@@ -42,7 +42,12 @@ export interface Spotify {
   choosePlaylist: (playlist: ChosenPlaylist) => void
   focusStart: () => Promise<void>
   focusEnd: () => Promise<void>
+  // A short line about the current song, for the radio's speech bubble.
+  nowPlaying: () => Promise<string>
 }
+
+// How long a "now playing" answer is reused, so hovering doesn't hammer Spotify.
+const NOW_PLAYING_CACHE_MS = 5_000
 
 export function createSpotify(): Spotify {
   let state: SpotifyState = loadSpotifyState()
@@ -71,7 +76,29 @@ export function createSpotify(): Spotify {
     return state.tokens!.accessToken
   }
 
+  let nowPlayingCache = { text: '', at: 0 }
+
+  const describeNowPlaying = async (): Promise<string> => {
+    if (SPOTIFY_CLIENT_ID === '') return "Spotify isn't set up yet."
+    if (!state.tokens) return 'Connect Spotify on the radio to play music while you grow.'
+    try {
+      const playback = await getPlayback(await token())
+      if (!playback?.isPlaying || !playback.track) return 'Nothing playing right now.'
+      const { name, artists } = playback.track
+      return artists ? `${name} — ${artists}` : name
+    } catch (error) {
+      fail(error)
+      return "Couldn't reach Spotify just now."
+    }
+  }
+
   return {
+    nowPlaying: async () => {
+      if (Date.now() - nowPlayingCache.at < NOW_PLAYING_CACHE_MS) return nowPlayingCache.text
+      nowPlayingCache = { text: await describeNowPlaying(), at: Date.now() }
+      return nowPlayingCache.text
+    },
+
     isSetUp: () => SPOTIFY_CLIENT_ID !== '',
     isConnected: () => state.tokens !== null,
     playlist: () => state.playlist,

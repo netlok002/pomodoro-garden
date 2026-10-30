@@ -16,11 +16,26 @@ export interface Device {
   supportsVolume: boolean
 }
 
+export interface Track {
+  name: string
+  artists: string
+}
+
 export interface Playback {
   isPlaying: boolean
   contextUri: string | null
   device: Device
+  track: Track | null
 }
+
+// Songs have artists; podcast episodes and ads may not, so everything is optional here.
+const toTrack = (item: any): Track | null =>
+  item?.name
+    ? {
+        name: String(item.name),
+        artists: (item.artists ?? []).map((artist: any) => artist?.name).filter(Boolean).join(', '),
+      }
+    : null
 
 // What went wrong, in terms the Settings tab can explain to the player.
 export type SpotifyErrorKind = 'signed-out' | 'premium-required' | 'no-device' | 'unavailable'
@@ -69,7 +84,12 @@ export async function getPlayback(token: string, fetchFn: FetchFn = fetch): Prom
   if (response.status === 204) return null
   const reply = await response.json()
   if (!reply?.device) return null
-  return { isPlaying: reply.is_playing === true, contextUri: reply.context?.uri ?? null, device: toDevice(reply.device) }
+  return {
+    isPlaying: reply.is_playing === true,
+    contextUri: reply.context?.uri ?? null,
+    device: toDevice(reply.device),
+    track: toTrack(reply.item),
+  }
 }
 
 export async function getDevices(token: string, fetchFn: FetchFn = fetch): Promise<Device[]> {
