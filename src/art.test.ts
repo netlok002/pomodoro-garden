@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { bookArt, flowerboxArt, sparkleArt, speciesArt, stageArt, weatherArt } from './art.ts'
+import { bookArt, flowerboxArt, radioArt, sparkleArt, speciesArt, stageArt, weatherArt } from './art.ts'
 import { WEATHERS } from './weather.ts'
 import { SPECIES } from './species.ts'
 
@@ -56,5 +56,11 @@ describe('ground lines', () => {
 describe('flowerboxArt', () => {
   it('is a drawing', () => {
     expect(flowerboxArt()).toContain('<svg')
+  })
+})
+
+describe('radioArt', () => {
+  it('is a drawing', () => {
+    expect(radioArt()).toContain('<svg')
   })
 })

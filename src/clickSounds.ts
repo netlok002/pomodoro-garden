@@ -9,6 +9,7 @@ const CLICKABLE = [
   '.forecast-today',
   '.book-art-toggle',
   '.book-tab',
+  '.radio-button',
   '.book-action',
 ].join(', ')
 

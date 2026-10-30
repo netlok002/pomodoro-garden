@@ -146,3 +146,15 @@ export function flowerboxArt(): string {
   const feet = 'M34 52 L34 59 L50 59 L50 52 M270 52 L270 59 L286 59 L286 52'
   return sketch(`${soil} ${rim} ${body} ${seams} ${grain} ${knot} ${feet}`, '0 0 320 64')
 }
+
+// An old tabletop radio with an arched top, round speaker grille, tuning dial,
+// two knobs and a slanted antenna. Opens the music controls.
+export function radioArt(): string {
+  return sketch(
+    'M7 21 C7 14 14 12 24 12 C34 12 41 14 41 21 L41 38 C33 38.6 15 38.6 7 38 Z ' +
+      'M10 38.4 L10 41.5 M38 38.4 L38 41.5 M33 12.5 L40 4.5 M40 4.5 m-1 0 a1 1 0 1 0 2 0 a1 1 0 1 0 -2 0 ' +
+      'M18 27 m-6.5 0 a6.5 6.5 0 1 0 13 0 a6.5 6.5 0 1 0 -13 0 M13 24 L23 24 M11.8 27 L24.2 27 M13 30 L23 30 ' +
+      'M28 19 L37 19 L37 25 L28 25 Z M30 19 L30 20.5 M32.5 19 L32.5 20.5 M35 19 L35 20.5 M33.5 19 L32 25 ' +
+      'M30.5 31.5 m-2.2 0 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 M35.5 31.5 m-2.2 0 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0',
+  )
+}

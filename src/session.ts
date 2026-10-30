@@ -47,7 +47,13 @@ export interface SessionElements {
   bookButton: HTMLElement
 }
 
-export function initSession(elements: SessionElements) {
+// Optional listeners for when focus starts and ends (used for music).
+export interface SessionHooks {
+  onFocusStart?: () => void
+  onFocusEnd?: () => void
+}
+
+export function initSession(elements: SessionElements, hooks: SessionHooks = {}) {
   const saved = loadState()
   let garden: Garden = saved.garden
   let book: Book = saved.book
@@ -201,6 +207,7 @@ export function initSession(elements: SessionElements) {
 
     playTimerStart()
     growing = true
+    hooks.onFocusStart?.()
     requestPersistentStorage()
     renderWeather()
     elements.note.textContent = ''
@@ -218,6 +225,7 @@ export function initSession(elements: SessionElements) {
 
     const onDone = () => {
       growing = false
+      hooks.onFocusEnd?.()
       playTimerDone()
       // The bloom waits (saved, so a reload can't lose it) until the player chooses.
       // A resumed sprout's slot is cleared and held for it.
@@ -232,6 +240,7 @@ export function initSession(elements: SessionElements) {
     elements.controls.querySelector<HTMLDivElement>('#cancel-button')!.addEventListener('click', () => {
       const ranSeconds = cancelTimer()
       growing = false
+      hooks.onFocusEnd?.()
       countWeatherUpTo(ranSeconds)
       const grownSeconds = planting.startElapsedSeconds + ranSeconds
       if (grownSeconds > 0) {

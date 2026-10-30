@@ -348,10 +348,11 @@ main {
   margin-top: 0;
 }
 
+/* The book sits at the top-left, lined up with the planter's left edge. */
 .book-button {
   position: absolute;
-  left: calc(100% + 0.9rem);
-  bottom: 0;
+  top: 0;
+  left: calc(50% - var(--box-width) / 2);
   width: 3rem;
   height: 3rem;
   padding: 0.2rem;
@@ -361,7 +362,22 @@ main {
   transition: transform 0.15s ease;
 }
 
-.book-button:hover {
+/* The old radio sits on the ground just right of the planter. */
+.radio-button {
+  position: absolute;
+  left: calc(100% + 0.6rem);
+  bottom: 0;
+  width: 3.6rem;
+  height: 3.6rem;
+  padding: 0.2rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.book-button:hover,
+.radio-button:hover {
   transform: rotate(-4deg) scale(1.06);
 }
 
@@ -411,7 +427,8 @@ main {
 }
 
 /* The garden: five plants growing from one sketched wooden flowerbox. */
-.garden-wrap {
+/* Garden sizes live on main so the book and radio can line up with the planter. */
+main {
   --slot: min(5.6rem, 15vw);
   /* Drawings fill only the middle of their slot, so neighbours can overlap without touching. */
   --slot-overlap: calc(var(--slot) * 0.18);
@@ -583,4 +600,27 @@ main {
   margin: 0;
   font-style: italic;
   color: var(--ink-soft);
+}
+
+/* The radio page reuses the book's paper styles. */
+.radio-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.2rem;
+}
+
+.radio-playlists {
+  max-width: 100%;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--ink-soft);
+  border-radius: 2px;
+  background: rgba(255, 250, 232, 0.6);
+  font: inherit;
+  color: var(--ink);
+}
+
+.radio-note {
+  margin-top: 1.2rem;
 }
