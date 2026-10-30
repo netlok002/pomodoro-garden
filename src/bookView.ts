@@ -17,7 +17,7 @@ function cardHtml(species: Species, book: Book): string {
       <div class="book-card undiscovered">
         <div class="book-art">${speciesArt(species.id)}</div>
         <p class="book-name">???</p>
-        <p class="book-detail">${species.durationMinutes} min seed</p>
+        <p class="page-note">${species.durationMinutes} min seed</p>
       </div>
     `
   }
@@ -33,9 +33,9 @@ function cardHtml(species: Species, book: Book): string {
     <div class="book-card">
       ${art}
       <p class="book-name">${species.name}</p>
-      <p class="book-detail">${species.durationMinutes} min seed</p>
-      <p class="book-detail">${countLine('normal', page.normal)} · ${countLine('perfect', page.perfect)}</p>
-      ${hasPerfect ? `<p class="book-detail">perfect under ${WEATHER_LABELS[species.perfectWeather]}</p>` : ''}
+      <p class="page-note">${species.durationMinutes} min seed</p>
+      <p class="page-note">${countLine('normal', page.normal)} · ${countLine('perfect', page.perfect)}</p>
+      ${hasPerfect ? `<p class="page-note">perfect under ${WEATHER_LABELS[species.perfectWeather]}</p>` : ''}
     </div>
   `
 }
@@ -54,26 +54,26 @@ export interface BookSettings {
 function settingsHtml(settings: BookSettings): string {
   return `
     <div class="book-settings">
-      <h3 class="book-settings-heading">Weather</h3>
-      <p class="book-detail">Enter a US zip code to grow your garden under your real local forecast.</p>
+      <h3 class="page-heading">Weather</h3>
+      <p class="page-note">Enter a US zip code to grow your garden under your real local forecast.</p>
       <form class="zip-form">
         <input class="zip-input" name="zip" inputmode="numeric" maxlength="5" placeholder="zip code"
           aria-label="US zip code" value="${escapeHtml(settings.zip)}" />
-        <button type="submit" class="book-action">Save</button>
-        <button type="button" class="book-action zip-clear">Clear</button>
+        <button type="submit" class="paper-button">Save</button>
+        <button type="button" class="paper-button zip-clear">Clear</button>
       </form>
-      <p class="zip-status" role="status">${escapeHtml(settings.weatherStatus)}</p>
+      <p class="status-line" role="status">${escapeHtml(settings.weatherStatus)}</p>
 
-      <h3 class="book-settings-heading">Your save</h3>
-      <p class="book-detail">Copy this code to back up your garden or move it to another device.</p>
+      <h3 class="page-heading">Your save</h3>
+      <p class="page-note">Copy this code to back up your garden or move it to another device.</p>
       <textarea class="save-code" readonly aria-label="Your save code">${escapeHtml(settings.saveCode)}</textarea>
       <div class="save-actions">
-        <button type="button" class="book-action save-copy">Copy</button>
+        <button type="button" class="paper-button save-copy">Copy</button>
       </div>
-      <p class="book-detail">Paste a save code to load it. This replaces your current garden and book.</p>
+      <p class="page-note">Paste a save code to load it. This replaces your current garden and book.</p>
       <textarea class="save-code save-input" aria-label="Save code to load" placeholder="GARDEN1.…"></textarea>
       <div class="save-actions">
-        <button type="button" class="book-action save-load">Load</button>
+        <button type="button" class="paper-button save-load">Load</button>
       </div>
       <p class="save-status" role="status"></p>
     </div>
@@ -85,8 +85,8 @@ export function openBook(book: Book, settings: BookSettings) {
   openModal((body, close) => {
     const { found, total } = bookProgress(book, SPECIES.length)
     body.innerHTML = `
-      <div class="book">
-        <h2 class="book-title">Flower Book</h2>
+      <div class="paper-page">
+        <h2 class="page-title">Flower Book</h2>
         <div class="book-tabs" role="tablist">
           <button class="book-tab active" data-tab="flowers" role="tab">Flowers</button>
           <button class="book-tab" data-tab="settings" role="tab">Settings</button>
@@ -101,7 +101,7 @@ export function openBook(book: Book, settings: BookSettings) {
       </div>
     `
 
-    const status = body.querySelector<HTMLElement>('.zip-status')!
+    const status = body.querySelector<HTMLElement>('.status-line')!
     const input = body.querySelector<HTMLInputElement>('.zip-input')!
     const saveStatus = body.querySelector<HTMLElement>('.save-status')!
     const saveInput = body.querySelector<HTMLTextAreaElement>('.save-input')!

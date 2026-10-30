@@ -4,13 +4,13 @@ import { playWoodBlock } from './sfx.ts'
 const CLICKABLE = [
   '.timer-value',
   '.select-option:not(.disabled)',
-  '.seed-wedge',
+  '.wheel-wedge',
   '.garden-slot.clickable',
   '.forecast-today',
   '.book-art-toggle',
   '.book-tab',
   '.radio-button',
-  '.book-action',
+  '.paper-button',
 ].join(', ')
 
 // One page-wide listener, so new buttons get the sound without extra wiring.

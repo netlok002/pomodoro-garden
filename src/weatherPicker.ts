@@ -20,18 +20,18 @@ export function openWeatherPicker(current: Weather | null, onSelect: (weather: W
       const isSelected = weather === current
       return `
         <path
-          class="seed-wedge${isSelected ? ' selected' : ''}"
+          class="wheel-wedge${isSelected ? ' selected' : ''}"
           data-weather="${weather}"
           d="${wedgePath(startAngle, startAngle + WEDGE_DEGREES, AUTO_RADIUS)}"
         ><title>${WEATHER_LABELS[weather]}</title></path>
-        <foreignObject class="seed-wedge-art" x="${art.x - ART_SIZE / 2}" y="${art.y - ART_SIZE / 2}" width="${ART_SIZE}" height="${ART_SIZE}">${weatherArt(weather)}</foreignObject>
+        <foreignObject class="wheel-art" x="${art.x - ART_SIZE / 2}" y="${art.y - ART_SIZE / 2}" width="${ART_SIZE}" height="${ART_SIZE}">${weatherArt(weather)}</foreignObject>
       `
     }).join('')
 
     body.innerHTML = `
-      <svg class="seed-picker" viewBox="0 0 200 200">
+      <svg class="wheel" viewBox="0 0 200 200">
         ${wedges}
-        <circle class="seed-wedge${current === null ? ' selected' : ''}" data-weather="auto" cx="${WHEEL_CENTER}" cy="${WHEEL_CENTER}" r="${AUTO_RADIUS}"><title>Use the local forecast</title></circle>
+        <circle class="wheel-wedge${current === null ? ' selected' : ''}" data-weather="auto" cx="${WHEEL_CENTER}" cy="${WHEEL_CENTER}" r="${AUTO_RADIUS}"><title>Use the local forecast</title></circle>
         <foreignObject class="weather-center-label" x="${WHEEL_CENTER - AUTO_RADIUS}" y="${WHEEL_CENTER - AUTO_RADIUS}" width="${AUTO_RADIUS * 2}" height="${AUTO_RADIUS * 2}">
           <div class="weather-center-text">local weather</div>
         </foreignObject>

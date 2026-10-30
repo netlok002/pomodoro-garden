@@ -18,23 +18,23 @@ export function openSeedPicker(currentSpeciesId: string, onSelect: (speciesId: s
       const isSelected = species.id === currentSpeciesId
       return `
         <path
-          class="seed-wedge${isSelected ? ' selected' : ''}"
+          class="wheel-wedge${isSelected ? ' selected' : ''}"
           data-species-id="${species.id}"
           d="${wedgePath(startAngle, startAngle + WEDGE_DEGREES)}"
         ><title>${species.name}</title></path>
-        <foreignObject class="seed-wedge-art" x="${art.x - ART_SIZE / 2}" y="${art.y - ART_SIZE / 2}" width="${ART_SIZE}" height="${ART_SIZE}">${speciesArt(species.id)}</foreignObject>
-        <text class="seed-wedge-minutes" x="${minutes.x}" y="${minutes.y}">${species.durationMinutes}</text>
+        <foreignObject class="wheel-art" x="${art.x - ART_SIZE / 2}" y="${art.y - ART_SIZE / 2}" width="${ART_SIZE}" height="${ART_SIZE}">${speciesArt(species.id)}</foreignObject>
+        <text class="wheel-label" x="${minutes.x}" y="${minutes.y}">${species.durationMinutes}</text>
       `
     }).join('')
 
     body.innerHTML = `
-      <svg class="seed-picker" viewBox="0 0 200 200">
+      <svg class="wheel" viewBox="0 0 200 200">
         ${wedges}
       </svg>
     `
 
     const onClick = (event: MouseEvent) => {
-      const target = (event.target as SVGElement).closest<SVGPathElement>('.seed-wedge')
+      const target = (event.target as SVGElement).closest<SVGPathElement>('.wheel-wedge')
       if (!target) return
       onSelect(target.dataset.speciesId!)
       close()

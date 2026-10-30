@@ -5,14 +5,14 @@ import type { Spotify } from './spotify.ts'
 export function openRadio(spotify: Spotify) {
   openModal((body) => {
     body.innerHTML = `
-      <div class="book radio">
-        <h2 class="book-title">Radio</h2>
-        <p class="book-detail">Your playlist plays while a plant grows, and turns down between sessions.</p>
-        <p class="book-detail">A newly chosen playlist starts the next time you plant a seed. If your
+      <div class="paper-page radio">
+        <h2 class="page-title">Radio</h2>
+        <p class="page-note">Your playlist plays while a plant grows, and turns down between sessions.</p>
+        <p class="page-note">A newly chosen playlist starts the next time you plant a seed. If your
           playlists don't show up, close the radio and open it again.</p>
         <div class="radio-controls"></div>
-        <p class="zip-status radio-status" role="status"></p>
-        <p class="book-detail radio-note">Needs Spotify Premium. While the garden is in testing,
+        <p class="status-line radio-status" role="status"></p>
+        <p class="page-note radio-note">Needs Spotify Premium. While the garden is in testing,
           your Spotify account must be added to the app first.</p>
       </div>
     `
@@ -23,7 +23,7 @@ export function openRadio(spotify: Spotify) {
     const button = (label: string, onClick: () => void) => {
       const element = document.createElement('button')
       element.type = 'button'
-      element.className = 'book-action'
+      element.className = 'paper-button'
       element.textContent = label
       element.addEventListener('click', onClick)
       return element
