@@ -8,6 +8,8 @@ export function openRadio(spotify: Spotify) {
       <div class="book radio">
         <h2 class="book-title">Radio</h2>
         <p class="book-detail">Your playlist plays while a plant grows, and turns down between sessions.</p>
+        <p class="book-detail">A newly chosen playlist starts the next time you plant a seed. If your
+          playlists don't show up, close the radio and open it again.</p>
         <div class="radio-controls"></div>
         <p class="zip-status radio-status" role="status"></p>
         <p class="book-detail radio-note">Needs Spotify Premium. While the garden is in testing,
