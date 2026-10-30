@@ -11,6 +11,7 @@ const state: StoredState = {
   pendingBloom: null,
   place: { zip: '87532', name: 'Española', state: 'NM', latitude: 35.99, longitude: -106.08 },
   forecastCache: null,
+  growing: null,
   lastSeen: 500,
 }
 

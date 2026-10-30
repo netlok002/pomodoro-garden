@@ -3,7 +3,7 @@ import { parseState } from './storage.ts'
 
 const NOW = 1_000_000
 const EMPTY_SLOTS = (count: number) => Array(count).fill(null)
-const FRESH = { garden: EMPTY_SLOTS(5), book: {}, weatherOverride: null, pendingBloom: null, place: null, forecastCache: null, lastSeen: NOW }
+const FRESH = { garden: EMPTY_SLOTS(5), book: {}, weatherOverride: null, pendingBloom: null, place: null, forecastCache: null, growing: null, lastSeen: NOW }
 
 describe('parseState', () => {
   it('starts with an empty garden and book when nothing is saved', () => {
@@ -23,6 +23,7 @@ describe('parseState', () => {
       pendingBloom: { speciesId: 'glowcap', perfect: true, slotIndex: 1 },
       place: { zip: '97201', name: 'Portland', state: 'OR', latitude: 45.5, longitude: -122.7 },
       forecastCache: { date: '2026-10-29', zip: '97201', forecast: { yesterday: 'rainy', today: 'clear', tomorrow: 'overcast' } },
+      growing: { speciesId: 'glowcap', elapsedSeconds: 312.5, weatherSeconds: { rainy: 312.5 }, slotIndex: null, lastTickAt: 400 },
       lastSeen: 500,
     }
     expect(parseState(JSON.stringify(saved), NOW)).toEqual(saved)
@@ -47,6 +48,7 @@ describe('parseState', () => {
       pendingBloom: null,
       place: null,
       forecastCache: null,
+      growing: null,
       lastSeen: 500,
     })
   })
@@ -128,5 +130,20 @@ describe('parseState cleans untrusted data', () => {
   it('drops a cached forecast containing unknown weathers', () => {
     const cache = { date: '2026-10-29', zip: '97201', forecast: { yesterday: 'clear', today: 'lava', tomorrow: 'clear' } }
     expect(load({ garden: [], forecastCache: cache }).forecastCache).toBeNull()
+  })
+})
+
+describe('parseState cleans a saved growing run', () => {
+  const load = (growing: unknown) => parseState(JSON.stringify({ garden: [], lastSeen: 1, growing }), NOW).growing
+  const run = { speciesId: 'glowcap', elapsedSeconds: 60, weatherSeconds: { clear: 60, lava: 9 }, slotIndex: 2, lastTickAt: 500 }
+
+  it('keeps a valid run, dropping unknown weathers', () => {
+    expect(load(run)).toEqual({ ...run, weatherSeconds: { clear: 60 } })
+  })
+
+  it('drops a run for an unknown species, a bad slot or a missing clock time', () => {
+    expect(load({ ...run, speciesId: 'nope' })).toBeNull()
+    expect(load({ ...run, slotIndex: 7 })).toBeNull()
+    expect(load({ ...run, lastTickAt: 'soon' })).toBeNull()
   })
 })

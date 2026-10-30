@@ -1,15 +1,17 @@
 // The game's screens: idle (choose a seed, tend the garden) → growing (the timer runs)
 // → celebrating (the bloom waits to be planted or picked). The saved game lives in
 // gameState and the weather in weatherController; this file only drives the screens.
-import { startTimer, formatTime } from './views/timer.ts'
+import { formatTime } from './views/timer.ts'
 import { nextEmptySlot, isFull, placePlant, removePlant, type PendingBloom } from './game/garden.ts'
 import { recordPick } from './game/book.ts'
 import { localDateKey } from './game/dates.ts'
 import { SPECIES, getSpecies } from './game/species.ts'
-import { addWeatherTime, isPerfect, type WeatherTally } from './weather/weather.ts'
+import { isPerfect } from './weather/weather.ts'
 import { requestPersistentStorage } from './save/storage.ts'
 import { decodeSave, encodeSave } from './save/saveCode.ts'
-import { createGameState } from './game/gameState.ts'
+import { createGameState, type GameChanges } from './game/gameState.ts'
+import { advanceRun, isRunDone, startRun, type GrowingRun } from './game/growingRun.ts'
+import { getSpeed } from './util/devSpeed.ts'
 import { createWeatherController } from './weather/weatherController.ts'
 import { playTimerDone, playTimerStart } from './audio/sfx.ts'
 import { openSeedPicker } from './views/seedPicker.ts'
@@ -19,13 +21,8 @@ import { renderGarden } from './views/gardenView.ts'
 import { renderForecast } from './views/forecastView.ts'
 import { renderCelebration, renderGrowingPlant, renderSeedChoice } from './views/plantView.ts'
 
-// What is growing right now. slotIndex is set when resuming a sprout already in the garden.
-interface Planting {
-  speciesId: string
-  startElapsedSeconds: number
-  weatherSeconds: WeatherTally
-  slotIndex?: number
-}
+// How often the growing screen catches up with real time.
+const TICK_MS = 250
 
 export interface SessionElements {
   forecast: HTMLElement
@@ -47,7 +44,6 @@ export function initSession(elements: SessionElements, hooks: SessionHooks = {})
   const game = createGameState()
   const weather = createWeatherController(game, { onChange: () => renderWeather() })
   let selectedSpeciesId = SPECIES[0].id
-  let growing = false
 
   const todayKey = () => localDateKey(new Date())
 
@@ -92,7 +88,7 @@ export function initSession(elements: SessionElements, hooks: SessionHooks = {})
     }
     const species = getSpecies(sprout.speciesId)
     renderGrowingPlant(elements.plant, species, sprout.elapsedSeconds)
-    const secondsLeft = species.durationMinutes * 60 - sprout.elapsedSeconds
+    const secondsLeft = Math.ceil(species.durationMinutes * 60 - sprout.elapsedSeconds)
     elements.display.innerHTML = `<span class="timer-preview">${formatTime(secondsLeft)}</span>`
   }
 
@@ -104,12 +100,8 @@ export function initSession(elements: SessionElements, hooks: SessionHooks = {})
       onSproutClick: (slotIndex) => {
         const sprout = game.current.garden[slotIndex]
         if (sprout?.kind !== 'sprout') return
-        goGrowing({
-          speciesId: sprout.speciesId,
-          startElapsedSeconds: sprout.elapsedSeconds,
-          weatherSeconds: sprout.weatherSeconds,
-          slotIndex,
-        })
+        const { elapsedSeconds, weatherSeconds } = sprout
+        beginGrowing(startRun(sprout.speciesId, Date.now(), { elapsedSeconds, weatherSeconds, slotIndex }))
       },
       onFlowerClick: pickFlower,
       onSproutHover: previewSprout,
@@ -122,78 +114,103 @@ export function initSession(elements: SessionElements, hooks: SessionHooks = {})
     }
     elements.controls.innerHTML = '<div id="start-button" class="select-option selected">❯ Plant</div>'
     elements.controls.querySelector<HTMLDivElement>('#start-button')!.addEventListener('click', () => {
-      goGrowing({ speciesId: selectedSpeciesId, startElapsedSeconds: 0, weatherSeconds: {} })
+      beginGrowing(startRun(selectedSpeciesId, Date.now()))
     })
   }
 
-  const goGrowing = (planting: Planting) => {
-    const species = getSpecies(planting.speciesId)
-    const remainingSeconds = species.durationMinutes * 60 - planting.startElapsedSeconds
-
-    // Each tick credits the seconds since the last tick to whatever the weather is right now.
-    let weatherSeconds = planting.weatherSeconds
-    let countedSeconds = 0
-    const countWeatherUpTo = (elapsedSeconds: number) => {
-      const newSeconds = elapsedSeconds - countedSeconds
-      if (newSeconds <= 0) return
-      weatherSeconds = addWeatherTime(weatherSeconds, weather.now(), newSeconds)
-      countedSeconds = elapsedSeconds
-    }
-
-    const stopGrowing = () => {
-      growing = false
-      hooks.onFocusEnd?.()
-    }
-
+  // Starting (or resuming a sprout): save the run, then show it growing.
+  const beginGrowing = (run: GrowingRun) => {
+    game.update({ growing: run })
     playTimerStart()
-    growing = true
     hooks.onFocusStart?.()
     requestPersistentStorage()
+    goGrowing()
+  }
+
+  // The growing screen. The run is saved and kept in real time: each tick adds the time
+  // that really passed, so a locked phone or a backgrounded tab catches up on its own.
+  const goGrowing = () => {
+    const species = getSpecies(game.current.growing!.speciesId)
+    const totalSeconds = species.durationMinutes * 60
+
     renderWeather()
     elements.note.textContent = ''
     renderGarden(elements.garden, game.current.garden)
-    renderGrowingPlant(elements.plant, species, planting.startElapsedSeconds)
     elements.controls.innerHTML = `
       <div class="select-option disabled">&nbsp; Growing...</div>
       <div id="cancel-button" class="select-option">❯ Stop</div>
     `
 
-    const onTick = (elapsedSeconds: number) => {
-      countWeatherUpTo(elapsedSeconds)
-      renderGrowingPlant(elements.plant, species, planting.startElapsedSeconds + elapsedSeconds)
+    const catchUp = () => {
+      const run = advanceRun(game.current.growing!, Date.now(), getSpeed(), weather.now())
+      game.update({ growing: run })
+      return run
     }
 
-    const onDone = () => {
-      stopGrowing()
+    const render = (run: GrowingRun) => {
+      elements.display.textContent = formatTime(Math.max(0, Math.ceil(totalSeconds - run.elapsedSeconds)))
+      renderGrowingPlant(elements.plant, species, run.elapsedSeconds)
+    }
+
+    const stop = () => {
+      clearInterval(ticker)
+      document.removeEventListener('visibilitychange', onVisible)
+      hooks.onFocusEnd?.()
+    }
+
+    const finish = (run: GrowingRun) => {
+      stop()
       playTimerDone()
       // The bloom waits (saved, so a reload can't lose it) until the player chooses.
       // A resumed sprout's slot is cleared and held for it.
       const { garden } = game.current
-      const slotIndex = planting.slotIndex ?? nextEmptySlot(garden)
+      const slotIndex = run.slotIndex ?? nextEmptySlot(garden)
       const bloom: PendingBloom = {
         speciesId: species.id,
-        perfect: isPerfect(weatherSeconds, species.perfectWeather),
+        perfect: isPerfect(run.weatherSeconds, species.perfectWeather),
         slotIndex,
       }
       game.update({
-        garden: planting.slotIndex !== undefined ? removePlant(garden, planting.slotIndex) : garden,
+        garden: run.slotIndex !== null ? removePlant(garden, run.slotIndex) : garden,
         pendingBloom: bloom,
+        growing: null,
       })
       goCelebrating(bloom)
     }
 
-    const cancelTimer = startTimer(elements.display, remainingSeconds, onDone, onTick)
+    const tick = () => {
+      const run = catchUp()
+      if (isRunDone(run)) finish(run)
+      else render(run)
+    }
+
+    // Coming back to the tab (or unlocking the phone) catches up straight away.
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') tick()
+    }
+
+    const ticker = setInterval(tick, TICK_MS)
+    document.addEventListener('visibilitychange', onVisible)
+
     elements.controls.querySelector<HTMLDivElement>('#cancel-button')!.addEventListener('click', () => {
-      const ranSeconds = cancelTimer()
-      stopGrowing()
-      countWeatherUpTo(ranSeconds)
-      const grownSeconds = planting.startElapsedSeconds + ranSeconds
-      if (grownSeconds > 0) {
-        const sprout = { kind: 'sprout' as const, speciesId: species.id, elapsedSeconds: grownSeconds, weatherSeconds }
-        game.update({ garden: placePlant(game.current.garden, sprout, planting.slotIndex) })
+      const run = catchUp()
+      stop()
+      // At least a second of growth leaves a sprout; a mis-tap leaves nothing behind.
+      const update: GameChanges = { growing: null }
+      if (run.elapsedSeconds >= 1) {
+        const sprout = {
+          kind: 'sprout' as const,
+          speciesId: species.id,
+          elapsedSeconds: run.elapsedSeconds,
+          weatherSeconds: run.weatherSeconds,
+        }
+        update.garden = placePlant(game.current.garden, sprout, run.slotIndex ?? undefined)
       }
+      game.update(update)
       goIdle()
     })
+
+    tick()
   }
 
   // The fresh bloom is shown off first; it only reaches the garden or the book once chosen.
@@ -222,7 +239,7 @@ export function initSession(elements: SessionElements, hooks: SessionHooks = {})
 
   // Replaces the whole game with a pasted save code (already cleaned by decodeSave).
   const loadSaveCode = (code: string) => {
-    if (growing) return { loaded: false, message: 'Finish or stop your current planting before loading a save.' }
+    if (game.current.growing) return { loaded: false, message: 'Finish or stop your current planting before loading a save.' }
     const loaded = decodeSave(code, Date.now())
     if (!loaded) return { loaded: false, message: "That doesn't look like a garden save code." }
     game.replace(loaded)
@@ -231,9 +248,12 @@ export function initSession(elements: SessionElements, hooks: SessionHooks = {})
     return { loaded: true, message: 'Save loaded.' }
   }
 
+  // Opening the app picks up wherever the player left off: a plant still growing
+  // (which may have finished while they were away), a bloom waiting, or the idle garden.
   const showCurrentScreen = (note = '') => {
-    const { pendingBloom } = game.current
-    if (pendingBloom) goCelebrating(pendingBloom)
+    const { growing, pendingBloom } = game.current
+    if (growing) goGrowing()
+    else if (pendingBloom) goCelebrating(pendingBloom)
     else goIdle(note)
   }
 

@@ -10,6 +10,7 @@ const saved: StoredState = {
   pendingBloom: null,
   place: null,
   forecastCache: null,
+  growing: null,
   lastSeen: 1,
 }
 

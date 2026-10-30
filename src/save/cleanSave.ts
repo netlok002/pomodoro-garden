@@ -5,6 +5,7 @@ import { isObject } from '../util/typeGuards.ts'
 import { GARDEN_CAPACITY, type PendingBloom, type Plant } from '../game/garden.ts'
 import type { Book, BookEntry, Variant } from '../game/book.ts'
 import type { CachedForecast, Place } from '../weather/realWeather.ts'
+import type { GrowingRun } from '../game/growingRun.ts'
 import { SPECIES } from '../game/species.ts'
 import { WEATHERS, type Forecast, type Weather, type WeatherOverride, type WeatherTally } from '../weather/weather.ts'
 
@@ -91,4 +92,19 @@ export function cleanForecastCache(value: unknown): CachedForecast | null {
   if (!isObject(value) || !isDateKey(value.date) || typeof value.zip !== 'string') return null
   const forecast = cleanForecast(value.forecast)
   return forecast ? { date: value.date, zip: value.zip, forecast } : null
+}
+
+export function cleanRun(value: unknown): GrowingRun | null {
+  if (!isObject(value) || !isKnownSpecies(value.speciesId)) return null
+  if (!isCount(value.elapsedSeconds) || !Number.isFinite(value.lastTickAt)) return null
+  const slot = value.slotIndex
+  const slotIsValid = slot === null || (Number.isInteger(slot) && slot >= 0 && slot < GARDEN_CAPACITY)
+  if (!slotIsValid) return null
+  return {
+    speciesId: value.speciesId,
+    elapsedSeconds: value.elapsedSeconds,
+    weatherSeconds: cleanTally(value.weatherSeconds),
+    slotIndex: slot,
+    lastTickAt: value.lastTickAt,
+  }
 }

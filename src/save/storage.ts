@@ -3,7 +3,8 @@ import { recordPick, type Book } from '../game/book.ts'
 import { localDateKey } from '../game/dates.ts'
 import type { WeatherOverride } from '../weather/weather.ts'
 import type { CachedForecast, Place } from '../weather/realWeather.ts'
-import { cleanBook, cleanForecastCache, cleanOverride, cleanPendingBloom, cleanPlace, cleanPlant } from './cleanSave.ts'
+import type { GrowingRun } from '../game/growingRun.ts'
+import { cleanBook, cleanForecastCache, cleanOverride, cleanPendingBloom, cleanPlace, cleanPlant, cleanRun } from './cleanSave.ts'
 
 const STORAGE_KEY = 'pomodoro-garden'
 
@@ -14,6 +15,8 @@ export interface StoredState {
   pendingBloom: PendingBloom | null
   place: Place | null
   forecastCache: CachedForecast | null
+  // The plant growing right now, so a session survives a locked phone or a closed tab.
+  growing: GrowingRun | null
   lastSeen: number
 }
 
@@ -26,10 +29,10 @@ function toSlots(saved: unknown[], book: Book, today: string): { garden: Garden;
     return { garden: emptyGarden().map((_, index) => plants[index] ?? null), book }
   }
 
-  const growing = plants.filter((plant): plant is Plant => plant !== null)
+  const planted = plants.filter((plant): plant is Plant => plant !== null)
   const garden = emptyGarden()
-  growing.slice(0, GARDEN_CAPACITY).forEach((plant, i) => (garden[PLANTING_ORDER[i]] = plant))
-  const overflowBook = growing
+  planted.slice(0, GARDEN_CAPACITY).forEach((plant, i) => (garden[PLANTING_ORDER[i]] = plant))
+  const overflowBook = planted
     .slice(GARDEN_CAPACITY)
     .reduce(
       (updated, plant) =>
@@ -49,6 +52,7 @@ export function parseState(raw: string | null, now: number): StoredState {
     pendingBloom: null,
     place: null,
     forecastCache: null,
+    growing: null,
     lastSeen: now,
   }
   if (!raw) return fresh
@@ -63,6 +67,7 @@ export function parseState(raw: string | null, now: number): StoredState {
       pendingBloom: cleanPendingBloom(parsed.pendingBloom),
       place: cleanPlace(parsed.place),
       forecastCache: cleanForecastCache(parsed.forecastCache),
+      growing: cleanRun(parsed.growing),
       lastSeen: Number.isFinite(parsed.lastSeen) ? parsed.lastSeen : now,
     }
   } catch {
