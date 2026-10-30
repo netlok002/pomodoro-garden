@@ -190,9 +190,10 @@ main {
 }
 
 /* Weather forecast arc: yesterday, today, tomorrow along a half circle. */
+/* As wide as the planter below, so the page lines up top to bottom. */
 .forecast {
   position: relative;
-  width: 20rem;
+  width: var(--box-width);
   aspect-ratio: 320 / 128;
   margin: 0 auto 2.5rem;
 }
