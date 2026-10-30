@@ -7,6 +7,10 @@ export function openRadio(spotify: Spotify) {
     body.innerHTML = `
       <div class="paper-page radio">
         <h2 class="page-title">Radio</h2>
+        <p class="radio-now" hidden>
+          <span class="radio-bubble-heading">Now playing</span>
+          <span class="radio-now-text"></span>
+        </p>
         <p class="page-note">Your playlist plays while a plant grows, and turns down between sessions.</p>
         <p class="page-note">A newly chosen playlist starts the next time you plant a seed. If your
           playlists don't show up, close the radio and open it again.</p>
@@ -20,6 +24,17 @@ export function openRadio(spotify: Spotify) {
     const status = body.querySelector<HTMLElement>('.radio-status')!
     const showStatus = () => (status.textContent = spotify.status())
 
+    // The song playing right now, so phones (which can't hover the radio) still see it.
+    const nowPlaying = body.querySelector<HTMLElement>('.radio-now')!
+    const showNowPlaying = async () => {
+      if (!spotify.isConnected()) {
+        nowPlaying.hidden = true
+        return
+      }
+      body.querySelector<HTMLElement>('.radio-now-text')!.textContent = await spotify.nowPlaying()
+      nowPlaying.hidden = false
+    }
+
     const button = (label: string, onClick: () => void) => {
       const element = document.createElement('button')
       element.type = 'button'
@@ -32,6 +47,7 @@ export function openRadio(spotify: Spotify) {
     const render = async () => {
       controls.replaceChildren()
       showStatus()
+      void showNowPlaying()
       if (!spotify.isSetUp()) return
       if (!spotify.isConnected()) {
         controls.append(button('Connect Spotify', () => void spotify.connect()))

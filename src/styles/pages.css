@@ -220,3 +220,22 @@
 .radio-note {
   margin-top: 1.2rem;
 }
+
+/* The radio page's "now playing" line, styled like the radio's speech bubble. */
+.radio-now {
+  max-width: 20rem;
+  margin: 0.9rem auto 0;
+  padding: 0.5rem 0.8rem;
+  border: 1px solid rgba(154, 139, 116, 0.5);
+  border-radius: 10px;
+  background: rgba(255, 250, 232, 0.6);
+}
+
+.radio-now[hidden] {
+  display: none;
+}
+
+.radio-now-text {
+  font-size: 0.9rem;
+  font-style: italic;
+}

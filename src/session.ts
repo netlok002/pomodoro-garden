@@ -24,6 +24,9 @@ import { renderCelebration, renderGrowingPlant, renderSeedChoice } from './views
 // How often the growing screen catches up with real time.
 const TICK_MS = 250
 
+// True on devices with a mouse or trackpad; false on phones and tablets.
+const canHover = () => matchMedia('(hover: hover)').matches
+
 export interface SessionElements {
   forecast: HTMLElement
   plant: HTMLElement
@@ -97,12 +100,9 @@ export function initSession(elements: SessionElements, hooks: SessionHooks = {})
     void weather.refresh()
     renderIdleCenter()
     renderGarden(elements.garden, game.current.garden, {
-      onSproutClick: (slotIndex) => {
-        const sprout = game.current.garden[slotIndex]
-        if (sprout?.kind !== 'sprout') return
-        const { elapsedSeconds, weatherSeconds } = sprout
-        beginGrowing(startRun(sprout.speciesId, Date.now(), { elapsedSeconds, weatherSeconds, slotIndex }))
-      },
+      // With a mouse, hovering previews and a click resumes. On a touch screen there's
+      // no hover, so a tap previews first and the player confirms with Resume.
+      onSproutClick: (slotIndex) => (canHover() ? resumeSprout(slotIndex) : chooseSprout(slotIndex)),
       onFlowerClick: pickFlower,
       onSproutHover: previewSprout,
     })
@@ -116,6 +116,24 @@ export function initSession(elements: SessionElements, hooks: SessionHooks = {})
     elements.controls.querySelector<HTMLDivElement>('#start-button')!.addEventListener('click', () => {
       beginGrowing(startRun(selectedSpeciesId, Date.now()))
     })
+  }
+
+  const resumeSprout = (slotIndex: number) => {
+    const sprout = game.current.garden[slotIndex]
+    if (sprout?.kind !== 'sprout') return
+    const { elapsedSeconds, weatherSeconds } = sprout
+    beginGrowing(startRun(sprout.speciesId, Date.now(), { elapsedSeconds, weatherSeconds, slotIndex }))
+  }
+
+  // Touch screens: show the tapped sprout in the middle with Resume and Back.
+  const chooseSprout = (slotIndex: number) => {
+    previewSprout(slotIndex)
+    elements.controls.innerHTML = `
+      <div id="resume-button" class="select-option selected">❯ Resume</div>
+      <div id="back-button" class="select-option">❯ Back</div>
+    `
+    elements.controls.querySelector('#resume-button')!.addEventListener('click', () => resumeSprout(slotIndex))
+    elements.controls.querySelector('#back-button')!.addEventListener('click', () => goIdle())
   }
 
   // Starting (or resuming a sprout): save the run, then show it growing.
