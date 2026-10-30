@@ -1,0 +1,63 @@
+/* Phones (iPhone first). Desktop keeps the radio beside the planter; on a narrow screen
+   there's no room there, so the radio moves to the top-right corner, mirroring the book. */
+@media (max-width: 600px) {
+  main {
+    /* Bigger slots: the planter fills about 80% of the screen. */
+    --slot: min(5.6rem, 18vw);
+    padding: 1rem 0 1.5rem;
+  }
+
+  /* The radio, its bubble and its notes now position against the whole page column. */
+  .garden-wrap {
+    position: static;
+  }
+
+  .radio-button {
+    left: auto;
+    right: calc(50% - var(--box-width) / 2);
+    top: 1rem;
+    bottom: auto;
+    width: 3rem;
+    height: 3rem;
+  }
+
+  /* The notes drift up from the radio's new spot. */
+  .music-notes {
+    left: auto;
+    right: calc(50% - var(--box-width) / 2);
+    top: -1.6rem;
+    bottom: auto;
+    width: 3rem;
+  }
+
+  /* The bubble opens downward from the radio, its tail pointing up. */
+  .radio-bubble {
+    right: calc(50% - var(--box-width) / 2);
+    top: calc(1rem + 3rem + 0.9rem);
+    bottom: auto;
+  }
+
+  .radio-bubble::after {
+    top: -0.42rem;
+    bottom: auto;
+    right: 1.1rem;
+    transform: rotate(-135deg);
+  }
+
+  .book-button {
+    top: 1rem;
+  }
+
+  /* Labels readable at arm's length. */
+  .forecast-label {
+    font-size: 0.82rem;
+  }
+
+  .forecast-today .forecast-label {
+    font-size: 0.92rem;
+  }
+
+  .garden-slot-minutes {
+    font-size: 0.8rem;
+  }
+}

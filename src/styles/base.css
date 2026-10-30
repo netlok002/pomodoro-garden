@@ -19,6 +19,14 @@
 body {
   margin: 0;
   min-height: 100vh;
+  /* Follows the phone's collapsing address bar, where supported. */
+  min-height: 100dvh;
+  box-sizing: border-box;
+  /* Keeps clear of the iPhone notch and home bar. */
+  padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0)
+    env(safe-area-inset-left, 0);
+  /* Taps are taps: no double-tap zoom. */
+  touch-action: manipulation;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -31,7 +39,8 @@ body {
     radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 55%, rgba(201, 176, 130, 0.35) 100%),
     var(--paper);
   background-attachment: fixed;
-  overflow: hidden;
+  /* Scroll up and down if the screen is short, but never sideways. */
+  overflow-x: hidden;
 }
 
 main {
