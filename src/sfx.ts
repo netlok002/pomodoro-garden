@@ -74,19 +74,55 @@ export function playWoodBlock() {
   noiseBurst(ctx, now, 0.012, 0.05, { type: 'bandpass', from: 2500, to: 2500, q: 1.5 })
 }
 
-// Cover lifting with a soft thump, then a page rustling over.
+// A quick riffle of a few pages as the book opens.
 export function playBookOpen() {
-  const ctx = audio()
-  const now = ctx.currentTime
-  strike(ctx, 140, now, 0.12, 0.12)
-  noiseBurst(ctx, now + 0.04, 0.32, 0.07, { type: 'bandpass', from: 1200, to: 4200 })
+  playPageFlips(2 + Math.floor(Math.random() * 3))
 }
 
-// A page settling, then the cover landing with a deeper thump.
+// One or two pages settling as the book closes.
 export function playBookClose() {
+  playPageFlips(1 + Math.floor(Math.random() * 2))
+}
+
+export interface PageFlip {
+  delay: number
+  duration: number
+  brightness: number
+}
+
+const between = (min: number, max: number, random: () => number) => min + (max - min) * random()
+
+// Timing and tone for a riffle of page flips, each one a little different.
+export function pageFlipPlan(count: number, random: () => number = Math.random): PageFlip[] {
+  const flips: PageFlip[] = []
+  for (let i = 0; i < count; i++) {
+    const previous = flips[i - 1]
+    const delay = previous ? previous.delay + previous.duration * 0.6 + between(0.03, 0.09, random) : 0
+    flips.push({ delay, duration: between(0.07, 0.14, random), brightness: between(1600, 3200, random) })
+  }
+  return flips
+}
+
+// A soft papery swish that swells and fades, then a tiny low flap as the page lands.
+function playPageFlip(ctx: AudioContext, start: number, { duration, brightness }: PageFlip) {
+  const swish = noiseSource(ctx, duration)
+  const filter = ctx.createBiquadFilter()
+  const gain = ctx.createGain()
+  filter.type = 'bandpass'
+  filter.Q.value = 1.1
+  filter.frequency.setValueAtTime(brightness * 0.7, start)
+  filter.frequency.exponentialRampToValueAtTime(brightness, start + duration)
+  gain.gain.setValueAtTime(0.0001, start)
+  gain.gain.exponentialRampToValueAtTime(0.045, start + duration * 0.6)
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + duration)
+  swish.connect(filter).connect(gain).connect(ctx.destination)
+  swish.start(start)
+
+  noiseBurst(ctx, start + duration * 0.85, 0.035, 0.03, { type: 'lowpass', from: 700, to: 400 })
+}
+
+function playPageFlips(count: number) {
   const ctx = audio()
   const now = ctx.currentTime
-  noiseBurst(ctx, now, 0.16, 0.05, { type: 'bandpass', from: 3500, to: 1400 })
-  strike(ctx, 95, now + 0.13, 0.2, 0.18)
-  noiseBurst(ctx, now + 0.13, 0.08, 0.06, { type: 'lowpass', from: 900, to: 300 })
+  for (const flip of pageFlipPlan(count)) playPageFlip(ctx, now + flip.delay, flip)
 }
