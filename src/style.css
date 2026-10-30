@@ -361,6 +361,8 @@ main {
 /* The book sits at the top-left, lined up with the planter's left edge. */
 .book-button {
   position: absolute;
+  /* Above the forecast arc, whose box spans the same corner. */
+  z-index: 2;
   top: 0;
   left: calc(50% - var(--box-width) / 2);
   width: 3rem;
@@ -700,7 +702,7 @@ main {
 }
 
 /* Music notes drifting up from the radio while music plays. */
-.radio-notes {
+.music-notes {
   position: absolute;
   left: calc(100% + 0.6rem);
   bottom: 3.4rem;
@@ -709,11 +711,11 @@ main {
   pointer-events: none;
 }
 
-.radio-notes[hidden] {
+.music-notes[hidden] {
   display: none;
 }
 
-.radio-note {
+.music-note {
   position: absolute;
   bottom: 0;
   width: 1.3rem;
@@ -756,7 +758,7 @@ main {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .radio-note {
+  .music-note {
     animation: none;
     opacity: 0.7;
   }

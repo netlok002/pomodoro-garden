@@ -25,10 +25,10 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
         <span class="radio-bubble-heading">Now playing</span>
         <span class="radio-bubble-text"></span>
       </div>
-      <div id="radio-notes" class="radio-notes" aria-hidden="true" hidden>
-        <span class="radio-note note-1">${noteArt('single')}</span>
-        <span class="radio-note note-2">${noteArt('pair')}</span>
-        <span class="radio-note note-3">${noteArt('single')}</span>
+      <div id="music-notes" class="music-notes" aria-hidden="true" hidden>
+        <span class="music-note note-1">${noteArt('single')}</span>
+        <span class="music-note note-2">${noteArt('pair')}</span>
+        <span class="music-note note-3">${noteArt('single')}</span>
       </div>
     </div>
     <p id="note" class="note"></p>
@@ -87,7 +87,7 @@ void spotify.finishLogin().then((returnedFromSpotify) => {
 // Music notes float above the radio while Spotify is playing. Spotify can't tell us when
 // playback changes, so we ask: every 15 seconds while the tab is visible, when the
 // player comes back to the tab, and shortly after each session starts or ends.
-const notes = element('radio-notes')
+const notes = element('music-notes')
 spotify.onPlayingChange((playing) => (notes.hidden = !playing))
 
 const PLAYING_CHECK_MS = 15_000
