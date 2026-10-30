@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { pageFlipPlan, randomizedPitch } from './sfx.ts'
+import { birdSongPlan, pageFlipPlan, randomizedPitch, tickPlan } from './sfx.ts'
 
 describe('randomizedPitch', () => {
   it('returns the base pitch at the middle of the random range', () => {
@@ -42,5 +42,34 @@ describe('pageFlipPlan', () => {
   it('varies from flip to flip', () => {
     const [first, second] = pageFlipPlan(2, (() => { let n = 0; return () => [0.1, 0.9][n++ % 2] })())
     expect(first.brightness).not.toBe(second.brightness)
+  })
+})
+
+describe('tickPlan', () => {
+  it('alternates tick and tock at a steady pace', () => {
+    const ticks = tickPlan(4)
+    expect(ticks.map((tick) => tick.kind)).toEqual(['tick', 'tock', 'tick', 'tock'])
+    expect(ticks[1].delay - ticks[0].delay).toBeCloseTo(ticks[3].delay - ticks[2].delay)
+  })
+})
+
+describe('birdSongPlan', () => {
+  const song = birdSongPlan()
+
+  it('is a short song of several chirps', () => {
+    expect(song.length).toBeGreaterThanOrEqual(8)
+    expect(Math.max(...song.map((chirp) => chirp.delay + chirp.duration))).toBeLessThanOrEqual(2.6)
+  })
+
+  it('keeps every chirp in a bird-like pitch range', () => {
+    for (const chirp of song) {
+      expect(Math.min(chirp.from, chirp.to)).toBeGreaterThanOrEqual(2500)
+      expect(Math.max(chirp.from, chirp.to)).toBeLessThanOrEqual(6000)
+    }
+  })
+
+  it('has rising tweets and falling trill notes', () => {
+    expect(song.some((chirp) => chirp.to > chirp.from)).toBe(true)
+    expect(song.some((chirp) => chirp.to < chirp.from)).toBe(true)
   })
 })

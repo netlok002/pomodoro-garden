@@ -12,7 +12,7 @@ import {
   type WeatherTally,
 } from './weather.ts'
 import { loadState, saveState } from './storage.ts'
-import { playDoneSound, playStartSound } from './sound.ts'
+import { playTimerDone, playTimerStart } from './sfx.ts'
 import { openSeedPicker } from './seedPicker.ts'
 import { openWeatherPicker } from './weatherPicker.ts'
 import { openBook } from './bookView.ts'
@@ -126,7 +126,7 @@ export function initSession(elements: SessionElements) {
       countedSeconds = elapsedSeconds
     }
 
-    playStartSound()
+    playTimerStart()
     renderWeather()
     elements.note.textContent = ''
     renderGarden(elements.garden, garden)
@@ -142,7 +142,7 @@ export function initSession(elements: SessionElements) {
     }
 
     const onDone = () => {
-      playDoneSound()
+      playTimerDone()
       const perfect = isPerfect(weatherSeconds, species.perfectWeather)
       // Saved straight away, so closing the tab mid-celebration never loses the flower.
       updateGarden(placePlant(garden, { kind: 'flower', speciesId: species.id, perfect }, planting.slotIndex))

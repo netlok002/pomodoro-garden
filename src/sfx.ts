@@ -1,6 +1,6 @@
 // Sound effects synthesised with the Web Audio API, so no sound files are needed.
 
-const WOOD_BLOCK_PITCH = 760
+const WOOD_BLOCK_PITCH = 380
 const WOOD_BLOCK_SPREAD_SEMITONES = 1.5
 
 let context: AudioContext | undefined
@@ -64,14 +64,14 @@ function noiseBurst(
   source.start(start)
 }
 
-// A soft, hollow "tok": a fundamental, a quick inharmonic overtone, and a tiny click.
+// A soft, dark, hollow "tok": a low fundamental, a faint overtone, and a muffled tap.
 export function playWoodBlock() {
   const ctx = audio()
   const now = ctx.currentTime
   const pitch = randomizedPitch(WOOD_BLOCK_PITCH, WOOD_BLOCK_SPREAD_SEMITONES)
-  strike(ctx, pitch, now, 0.16, 0.13)
-  strike(ctx, pitch * 2.76, now, 0.035, 0.05)
-  noiseBurst(ctx, now, 0.012, 0.05, { type: 'bandpass', from: 2500, to: 2500, q: 1.5 })
+  strike(ctx, pitch, now, 0.09, 0.16)
+  strike(ctx, pitch * 2.76, now, 0.012, 0.05)
+  noiseBurst(ctx, now, 0.015, 0.02, { type: 'lowpass', from: 900, to: 900 })
 }
 
 // A quick riffle of a few pages as the book opens.
@@ -125,4 +125,84 @@ function playPageFlips(count: number) {
   const ctx = audio()
   const now = ctx.currentTime
   for (const flip of pageFlipPlan(count)) playPageFlip(ctx, now + flip.delay, flip)
+}
+
+export interface Tick {
+  delay: number
+  kind: 'tick' | 'tock'
+}
+
+const TICK_INTERVAL = 0.16
+
+// A steady tick-tock, like winding up a kitchen timer.
+export function tickPlan(count: number): Tick[] {
+  return Array.from({ length: count }, (_, i) => ({
+    delay: i * TICK_INTERVAL,
+    kind: i % 2 === 0 ? 'tick' : 'tock',
+  }))
+}
+
+export function playTimerStart() {
+  const ctx = audio()
+  const now = ctx.currentTime
+  for (const { delay, kind } of tickPlan(8)) {
+    const start = now + delay
+    strike(ctx, kind === 'tick' ? 2100 : 1600, start, 0.07, 0.035, 'triangle')
+    noiseBurst(ctx, start, 0.01, 0.03, { type: 'highpass', from: 3000, to: 3000 })
+  }
+}
+
+export interface Chirp {
+  delay: number
+  duration: number
+  from: number
+  to: number
+}
+
+// One bird's rising "tweet tweet" phrase.
+function tweetPhrase(start: number, count: number, random: () => number): Chirp[] {
+  const chirps: Chirp[] = []
+  let delay = start
+  for (let i = 0; i < count; i++) {
+    const duration = between(0.06, 0.1, random)
+    chirps.push({ delay, duration, from: between(2800, 3400, random), to: between(4200, 5000, random) })
+    delay += duration + between(0.07, 0.12, random)
+  }
+  return chirps
+}
+
+// A second bird's quick falling trill.
+function trill(start: number, count: number, random: () => number): Chirp[] {
+  return Array.from({ length: count }, (_, i) => {
+    const from = between(5000, 5600, random)
+    return { delay: start + i * 0.065, duration: between(0.035, 0.05, random), from, to: from - between(700, 1000, random) }
+  })
+}
+
+// Call, answer, and reply: two birds trading a short song.
+export function birdSongPlan(random: () => number = Math.random): Chirp[] {
+  return [
+    ...tweetPhrase(0, 2 + Math.floor(random() * 2), random),
+    ...trill(0.85, 5 + Math.floor(random() * 3), random),
+    ...tweetPhrase(1.6, 2, random),
+  ]
+}
+
+export function playTimerDone() {
+  const ctx = audio()
+  const now = ctx.currentTime
+  for (const { delay, duration, from, to } of birdSongPlan()) {
+    const start = now + delay
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.type = 'sine'
+    osc.frequency.setValueAtTime(from, start)
+    osc.frequency.exponentialRampToValueAtTime(to, start + duration)
+    gain.gain.setValueAtTime(0.0001, start)
+    gain.gain.exponentialRampToValueAtTime(0.06, start + duration * 0.25)
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + duration)
+    osc.connect(gain).connect(ctx.destination)
+    osc.start(start)
+    osc.stop(start + duration + 0.02)
+  }
 }
