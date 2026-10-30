@@ -15,7 +15,7 @@ import { focusEndVolume, focusStartAction, focusStartVolume } from './music.ts'
 import { loadSpotifyState, saveSpotifyState, type ChosenPlaylist, type SpotifyState } from './spotifyStore.ts'
 
 // From the Spotify developer dashboard. Public by design: the PKCE login needs no secret.
-export const SPOTIFY_CLIENT_ID = ''
+export const SPOTIFY_CLIENT_ID: string = 'd5a26176fc5a49a6ab8664024ea34ed5'
 
 const LOGIN_KEY = 'pomodoro-garden-spotify-login'
 
