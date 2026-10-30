@@ -27,8 +27,9 @@ function contentSecurityPolicy(): Plugin {
   }
 }
 
-export default defineConfig(({ command }) => ({
-  // GitHub Pages serves the site from /pomodoro-garden/; locally it stays at the root.
-  base: command === 'build' ? '/pomodoro-garden/' : '/',
+export default defineConfig(({ command, isPreview }) => ({
+  // GitHub Pages serves the site from /pomodoro-garden/ (and so does `vite preview`, which
+  // tests the published build locally); the dev server stays at the root.
+  base: command === 'build' || isPreview ? '/pomodoro-garden/' : '/',
   plugins: [contentSecurityPolicy()],
 }))
