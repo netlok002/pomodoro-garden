@@ -268,3 +268,11 @@
 .modal-close:hover {
   color: var(--ink);
 }
+
+/* "Play on" sits on its own line under the playlist picker. */
+.radio-device {
+  flex-basis: 100%;
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--ink-soft);
+}

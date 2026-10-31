@@ -14,6 +14,13 @@ export interface SpotifyState {
   playlist: ChosenPlaylist | null
   // The player's own volume, kept while the music is ducked between sessions.
   rememberedVolume: number | null
+  // The device picked under "Play on"; null means choose automatically.
+  device: ChosenDevice | null
+}
+
+export interface ChosenDevice {
+  id: string
+  name: string
 }
 
 
@@ -33,6 +40,11 @@ function cleanVolume(value: unknown): number | null {
   return Number.isFinite(value) && (value as number) >= 0 && (value as number) <= 100 ? (value as number) : null
 }
 
+function cleanDevice(value: unknown): ChosenDevice | null {
+  if (!isObject(value) || typeof value.id !== 'string' || value.id === '') return null
+  return { id: value.id, name: String(value.name ?? 'Spotify device').slice(0, 200) }
+}
+
 export function parseSpotifyState(raw: string | null): SpotifyState {
   try {
     const parsed = raw ? JSON.parse(raw) : {}
@@ -40,9 +52,10 @@ export function parseSpotifyState(raw: string | null): SpotifyState {
       tokens: cleanTokens(parsed.tokens),
       playlist: cleanPlaylist(parsed.playlist),
       rememberedVolume: cleanVolume(parsed.rememberedVolume),
+      device: cleanDevice(parsed.device),
     }
   } catch {
-    return { tokens: null, playlist: null, rememberedVolume: null }
+    return { tokens: null, playlist: null, rememberedVolume: null, device: null }
   }
 }
 

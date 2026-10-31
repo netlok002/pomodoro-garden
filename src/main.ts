@@ -39,7 +39,8 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 
 const element = (id: string) => document.querySelector<HTMLElement>(`#${id}`)!
 
-const spotify = createSpotify()
+// A touch screen without hover is a phone (or tablet): automatic playback prefers its own Spotify.
+const spotify = createSpotify({ onPhone: () => matchMedia('(hover: none) and (pointer: coarse)').matches })
 
 initSession(
   {

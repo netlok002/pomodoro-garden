@@ -85,7 +85,42 @@ export function openRadio(spotify: Spotify) {
         if (chosen) spotify.choosePlaylist({ uri: chosen.uri, name: chosen.name })
         showStatus()
       })
+
+      await renderDevicePicker()
       showStatus()
+    }
+
+    // "Play on": automatic (this phone or this computer), or a specific device. Device
+    // names come from Spotify, so like playlists they're only ever set as text.
+    const renderDevicePicker = async () => {
+      const label = document.createElement('label')
+      label.className = 'radio-device'
+      label.textContent = 'Play on '
+      const picker = document.createElement('select')
+      picker.className = 'radio-playlists'
+      label.append(picker)
+      controls.append(label)
+
+      const option = (value: string, text: string) => {
+        const element = document.createElement('option')
+        element.value = value
+        element.textContent = text
+        return element
+      }
+      const devices = await spotify.listDevices()
+      const picked = spotify.device()
+      picker.append(option('', 'Automatic (this device)'))
+      for (const device of devices) picker.append(option(device.id, `${device.name} (${device.type.toLowerCase()})`))
+      if (picked && !devices.some((device) => device.id === picked.id)) {
+        picker.append(option(picked.id, `${picked.name} (not available right now)`))
+      }
+      picker.value = picked?.id ?? ''
+
+      picker.addEventListener('change', () => {
+        const device = devices.find((candidate) => candidate.id === picker.value)
+        spotify.chooseDevice(device ? { id: device.id, name: device.name } : picker.value ? picked : null)
+        showStatus()
+      })
     }
 
     void render()

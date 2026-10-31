@@ -10,9 +10,15 @@ import {
   readCallback,
   refreshTokens,
 } from './spotifyAuth.ts'
-import { SpotifyError, getDevices, getPlayback, getPlaylists, play, setVolume, type Playlist } from './spotifyApi.ts'
-import { focusEndVolume, focusStartAction, focusStartVolume } from './music.ts'
-import { loadSpotifyState, saveSpotifyState, type ChosenPlaylist, type SpotifyState } from './spotifyStore.ts'
+import { SpotifyError, getDevices, getPlayback, getPlaylists, moveHere, play, setVolume, type Device, type Playlist } from './spotifyApi.ts'
+import { chooseDevice, focusEndVolume, focusStartAction, focusStartVolume } from './music.ts'
+import {
+  loadSpotifyState,
+  saveSpotifyState,
+  type ChosenDevice,
+  type ChosenPlaylist,
+  type SpotifyState,
+} from './spotifyStore.ts'
 
 // From the Spotify developer dashboard. Public by design: the PKCE login needs no secret.
 export const SPOTIFY_CLIENT_ID: string = 'd5a26176fc5a49a6ab8664024ea34ed5'
@@ -23,6 +29,7 @@ const ERROR_MESSAGES: Record<SpotifyError['kind'], string> = {
   'signed-out': 'Spotify signed you out. Connect again to keep the music going.',
   'premium-required': 'Spotify Premium is needed for the garden to play your music.',
   'no-device': 'Open Spotify on your phone or computer, then plant again.',
+  'phone-asleep': 'Open the Spotify app on this phone (play anything for a moment), then plant again so it can play here.',
   unavailable: "Spotify isn't responding right now. Your timer still works.",
 }
 
@@ -38,6 +45,10 @@ export interface Spotify {
   // True when the page was just opened by Spotify sending the player back.
   finishLogin: () => Promise<boolean>
   disconnect: () => void
+  // "Play on": the devices Spotify can play on right now, and the player's pick (null = automatic).
+  listDevices: () => Promise<Device[]>
+  device: () => ChosenDevice | null
+  chooseDevice: (device: ChosenDevice | null) => void
   listPlaylists: () => Promise<Playlist[]>
   choosePlaylist: (playlist: ChosenPlaylist) => void
   focusStart: () => Promise<void>
@@ -52,7 +63,8 @@ export interface Spotify {
 // How long a "now playing" answer is reused, so hovering doesn't hammer Spotify.
 const NOW_PLAYING_CACHE_MS = 5_000
 
-export function createSpotify(): Spotify {
+// onPhone: whether this is a phone, so automatic playback prefers the phone's own Spotify.
+export function createSpotify({ onPhone = () => false }: { onPhone?: () => boolean } = {}): Spotify {
   let state: SpotifyState = loadSpotifyState()
   let lastProblem = ''
 
@@ -188,6 +200,22 @@ export function createSpotify(): Spotify {
       }
     },
 
+    listDevices: async () => {
+      try {
+        return await getDevices(await token())
+      } catch (error) {
+        fail(error)
+        return []
+      }
+    },
+
+    device: () => state.device,
+
+    chooseDevice: (device) => {
+      update({ device })
+      lastProblem = ''
+    },
+
     choosePlaylist: (playlist) => {
       update({ playlist })
       lastProblem = ''
@@ -198,15 +226,17 @@ export function createSpotify(): Spotify {
       try {
         const accessToken = await token()
         const playback = await getPlayback(accessToken)
-        const action = focusStartAction(playback, state.playlist.uri)
-        if (action !== 'nothing') {
-          // With nothing active, wake the first device Spotify knows about.
-          const deviceId = playback?.device.id ?? (await getDevices(accessToken))[0]?.id
-          if (!deviceId) throw new SpotifyError('no-device')
-          await play(accessToken, { deviceId, contextUri: action === 'play-playlist' ? state.playlist.uri : undefined })
-        }
-        const volume = focusStartVolume(state.rememberedVolume, playback)
-        if (volume !== null && playback) await setVolume(accessToken, volume, playback.device.id)
+        const devices = await getDevices(accessToken)
+        const target = chooseDevice(devices, playback, state.device?.id ?? null, onPhone())
+        if (!target) throw new SpotifyError(onPhone() ? 'phone-asleep' : 'no-device')
+
+        const action = focusStartAction(playback, state.playlist.uri, target)
+        if (action === 'move-here') await moveHere(accessToken, target.id)
+        if (action === 'resume') await play(accessToken, { deviceId: target.id })
+        if (action === 'play-playlist') await play(accessToken, { deviceId: target.id, contextUri: state.playlist.uri })
+
+        const volume = focusStartVolume(state.rememberedVolume, target)
+        if (volume !== null) await setVolume(accessToken, volume, target.id)
         update({ rememberedVolume: null })
         lastProblem = ''
       } catch (error) {

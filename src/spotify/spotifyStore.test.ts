@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { parseSpotifyState } from './spotifyStore.ts'
 
-const EMPTY = { tokens: null, playlist: null, rememberedVolume: null }
+const EMPTY = { tokens: null, playlist: null, rememberedVolume: null, device: null }
 const tokens = { accessToken: 'acc', refreshToken: 'ref', expiresAt: 123 }
 const playlist = { uri: 'spotify:playlist:37i9dQZF1DX8NTLI2TtZa6', name: 'Deep Focus' }
 
@@ -12,7 +12,7 @@ describe('parseSpotifyState', () => {
   })
 
   it('restores the login, chosen playlist and remembered volume', () => {
-    const saved = { tokens, playlist, rememberedVolume: 70 }
+    const saved = { tokens, playlist, rememberedVolume: 70, device: { id: 'abc123', name: 'Kitchen speaker' } }
     expect(parseSpotifyState(JSON.stringify(saved))).toEqual(saved)
   })
 
@@ -21,6 +21,7 @@ describe('parseSpotifyState', () => {
       tokens: { accessToken: 'acc', refreshToken: 5, expiresAt: 'soon' },
       playlist: { uri: 'javascript:alert(1)', name: 'Bad' },
       rememberedVolume: 400,
+      device: { id: 42, name: 'Bad' },
     }
     expect(parseSpotifyState(JSON.stringify(saved))).toEqual(EMPTY)
   })

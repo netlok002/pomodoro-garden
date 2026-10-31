@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { fakeFetch } from '../testing/fakeFetch.ts'
-import { SpotifyError, getDevices, getPlayback, getPlaylists, play, setVolume } from './spotifyApi.ts'
+import { SpotifyError, getDevices, getPlayback, getPlaylists, moveHere, play, setVolume } from './spotifyApi.ts'
 
 
 describe('getPlaylists', () => {
@@ -30,12 +30,12 @@ describe('getPlayback', () => {
     const { fetchFn } = fakeFetch(200, {
       is_playing: true,
       context: { uri: 'spotify:playlist:p1' },
-      device: { id: 'd1', volume_percent: 70, supports_volume: true },
+      device: { id: 'd1', name: 'Desk', type: 'Computer', volume_percent: 70, supports_volume: true },
     })
     expect(await getPlayback('tok', fetchFn)).toEqual({
       isPlaying: true,
       contextUri: 'spotify:playlist:p1',
-      device: { id: 'd1', volumePercent: 70, supportsVolume: true },
+      device: { id: 'd1', name: 'Desk', type: 'Computer', volumePercent: 70, supportsVolume: true },
       track: null,
     })
   })
@@ -43,7 +43,7 @@ describe('getPlayback', () => {
   it('includes the song and its artists', async () => {
     const { fetchFn } = fakeFetch(200, {
       is_playing: true,
-      device: { id: 'd1', volume_percent: 70, supports_volume: true },
+      device: { id: 'd1', name: 'Desk', type: 'Computer', volume_percent: 70, supports_volume: true },
       item: { name: 'Weightless', artists: [{ name: 'Marconi Union' }, { name: 'Guest' }] },
     })
     expect((await getPlayback('tok', fetchFn))?.track).toEqual({ name: 'Weightless', artists: 'Marconi Union, Guest' })
@@ -58,9 +58,11 @@ describe('getPlayback', () => {
 describe('getDevices', () => {
   it('lists devices the player could play on', async () => {
     const { fetchFn } = fakeFetch(200, {
-      devices: [{ id: 'd1', is_active: false, volume_percent: 50, supports_volume: false }],
+      devices: [{ id: 'd1', name: 'iPhone', type: 'Smartphone', is_active: false, volume_percent: 50, supports_volume: false }],
     })
-    expect(await getDevices('tok', fetchFn)).toEqual([{ id: 'd1', volumePercent: 50, supportsVolume: false }])
+    expect(await getDevices('tok', fetchFn)).toEqual([
+      { id: 'd1', name: 'iPhone', type: 'Smartphone', volumePercent: 50, supportsVolume: false },
+    ])
   })
 })
 
@@ -78,6 +80,16 @@ describe('play', () => {
     await play('tok', {}, fetchFn)
     expect(calls[0].url).toBe('https://api.spotify.com/v1/me/player/play')
     expect(calls[0].body).toBeUndefined()
+  })
+})
+
+describe('moveHere', () => {
+  it('moves playback to a device and keeps it playing from the same spot', async () => {
+    const { fetchFn, calls } = fakeFetch(204)
+    await moveHere('tok', 'phone1', fetchFn)
+    expect(calls[0].method).toBe('PUT')
+    expect(calls[0].url).toBe('https://api.spotify.com/v1/me/player')
+    expect(JSON.parse(calls[0].body!)).toEqual({ device_ids: ['phone1'], play: true })
   })
 })
 

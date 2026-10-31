@@ -12,6 +12,9 @@ export interface Playlist {
 
 export interface Device {
   id: string
+  name: string
+  // "Computer", "Smartphone", "Speaker" and so on, as Spotify reports it.
+  type: string
   volumePercent: number
   supportsVolume: boolean
 }
@@ -38,7 +41,7 @@ const toTrack = (item: any): Track | null =>
     : null
 
 // What went wrong, in terms the Settings tab can explain to the player.
-export type SpotifyErrorKind = 'signed-out' | 'premium-required' | 'no-device' | 'unavailable'
+export type SpotifyErrorKind = 'signed-out' | 'premium-required' | 'no-device' | 'phone-asleep' | 'unavailable'
 
 export class SpotifyError extends Error {
   kind: SpotifyErrorKind
@@ -67,6 +70,8 @@ async function request(token: string, path: string, fetchFn: FetchFn, init: Requ
 
 const toDevice = (device: any): Device => ({
   id: device.id,
+  name: String(device.name ?? 'Spotify device'),
+  type: String(device.type ?? 'Unknown'),
   volumePercent: device.volume_percent ?? 0,
   supportsVolume: device.supports_volume === true,
 })
@@ -107,6 +112,14 @@ export async function play(
   await request(token, `/me/player/play${query}`, fetchFn, {
     method: 'PUT',
     body: contextUri ? JSON.stringify({ context_uri: contextUri }) : undefined,
+  })
+}
+
+// Moves whatever is playing to another device, keeping its place and playing on.
+export async function moveHere(token: string, deviceId: string, fetchFn: FetchFn = fetch): Promise<void> {
+  await request(token, '/me/player', fetchFn, {
+    method: 'PUT',
+    body: JSON.stringify({ device_ids: [deviceId], play: true }),
   })
 }
 
